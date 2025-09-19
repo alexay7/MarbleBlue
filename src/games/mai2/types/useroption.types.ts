@@ -1,0 +1,56 @@
+import {Types} from "mongoose";
+
+export type Mai2UserOptionType = {
+    _id: Types.ObjectId;
+
+    userId: string;
+
+    optionKind: number;
+    noteSpeed: number;
+    slideSpeed: number;
+    touchSpeed: number;
+    tapDesign: number;
+    holdDesign: number;
+    slideDesign: number;
+    starType: number;
+    outlineDesign: number;
+    noteSize: number;
+    slideSize: number;
+    touchSize: number;
+    starRotate: number;
+    dispCenter: number;
+    dispChain: number;
+    dispRate: number;
+    dispBar: number;
+    touchEffect: number;
+    submonitorAnimation: number;
+    submonitorAchive: number;
+    submonitorAppeal: number;
+    matching: number;
+    trackSkip: number;
+    brightness: number;
+    mirrorMode: number;
+    dispJudge: number;
+    dispJudgePos: number;
+    dispJudgeTouchPos: number;
+    adjustTiming: number;
+    judgeTiming: number;
+    ansVolume: number;
+    tapHoldVolume: number;
+    criticalSe: number;
+    tapSe: number;
+    breakSe: number;
+    breakVolume: number;
+    exSe: number;
+    exVolume: number;
+    slideSe: number;
+    slideVolume: number;
+    touchHoldVolume: number;
+    damageSeVolume: number;
+    headPhoneVolume: number;
+    sortTab: number;
+    sortMusic: number;
+    outFrameType: number;
+    breakSlideVolume: number;
+    touchVolume: number;
+};

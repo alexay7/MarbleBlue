@@ -1,0 +1,66 @@
+import {Types} from "mongoose";
+
+export type Chu3UserPlaylogType = {
+    _id: Types.ObjectId;
+
+    cardId: string;
+
+    romVersion: string;
+    orderId: number;
+    sortNumber: number;
+    placeId: number;
+    playDate: Date;
+    userPlayDate: Date;
+    musicId: number;
+    level: number;
+    customId: number;
+    playedUserId1: number;
+    playedUserId2: number;
+    playedUserId3: number;
+    playedUserName1: string;
+    playedUserName2: string;
+    playedUserName3: string;
+    playedMusicLevel1: number;
+    playedMusicLevel2: number;
+    playedMusicLevel3: number;
+    playedCustom1: number;
+    playedCustom2: number;
+    playedCustom3: number;
+    track: number;
+    score: number;
+    rank: number;
+    maxCombo: number;
+    maxChain: number;
+    rateTap: number;
+    rateHold: number;
+    rateSlide: number;
+    rateAir: number;
+    rateFlick: number;
+    judgeGuilty: number;
+    judgeAttack: number;
+    judgeJustice: number;
+    judgeCritical: number;
+    judgeHeaven: number;
+    eventId: number;
+    playerRating: number;
+    isNewRecord: boolean;
+    isFullCombo: boolean;
+    fullChainKind: number;
+    isAllJustice: boolean;
+    isContinue: boolean;
+    isFreeToPlay: boolean;
+    characterId: number;
+    charaIllustId: number;
+    skillId: number;
+    playKind: number;
+    isClear: boolean;
+    skillLevel: number;
+    skillEffect: number;
+    placeName: string;
+    commonId:number;
+    regionId:number;
+    machineType:number;
+    ticketId: number;
+    monthPoint:number;
+    eventPoint:number;
+}
