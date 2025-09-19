@@ -14,9 +14,8 @@
     "typescript": "^5"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
     "dev": "nodemon src/main.ts",
+    "start": "bun run src/main.ts",
     "lint": "eslint src **/*.ts"
   },
   "dependencies": {

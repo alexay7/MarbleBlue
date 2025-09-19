@@ -1,0 +1,34 @@
+services:
+  server:
+    image: alexay7/marbleblue:latest
+    ports:
+        - "80:80"
+        - "22345:22345"
+    restart: unless-stopped
+    environment:
+      - MONGO_URI=
+      - ALLNET_HOST=
+      - AIME_SECRET=
+      - AIME_KEY=
+      - DEFAULT_CHU3_MATCHING_URI=
+      - DEFAULT_CHU3_MATCHING_REFLECTOR=
+      - SCORES_SERVER=
+    depends_on:
+      - db
+  db:
+    # A newer version can be used, my CPU is just too old for mongo >5
+    image: mongo:4.4.22
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+    mongo-data:
+        driver: local

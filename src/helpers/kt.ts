@@ -11,20 +11,36 @@ type UserPB = {
     }
 }
 
+type UserPBs = {
+	success:boolean,
+	description:string,
+	body:{
+		pbs:UserPB[],
+		charts:SongChart[]
+	}
+}
+
 type GekiUserPB = {
-    chartID:string,
-    userID:number,
-    scoreData:{
-        score: number,
-        noteLamp:"CLEAR"|"FULL COMBO"|"ALL BREAK",
-        bellLamp:"FULL BELL"|"NONE",
-        platinumScore:number,
-        platinumStars:number,
-        grade:"SSS+"|"SSS"|"SS"|"S"|"AAA"|"AA"|"A"|"BBB"|"BB"|"B"|"C"|"D",
-        optional:{
-            maxCombo?:number
-        }
-    }
+    success:boolean,
+	description:string,
+	body:{
+		pbs: {
+			chartID: string
+			userID: number,
+			scoreData: {
+				score: number,
+				noteLamp: "CLEAR" | "FULL COMBO" | "ALL BREAK",
+				bellLamp: "FULL BELL" | "NONE",
+				platinumScore: number,
+				platinumStars: number,
+				grade: "SSS+" | "SSS" | "SS" | "S" | "AAA" | "AA" | "A" | "BBB" | "BB" | "B" | "C" | "D",
+				optional: {
+					maxCombo?: number
+				}
+			}
+		}[],
+		charts:SongChart[]
+	}
 }
 
 type SongChart = {
@@ -33,15 +49,6 @@ type SongChart = {
         inGameID:number
     },
     difficulty: "BASIC" | "ADVANCED" | "EXPERT" | "MASTER" | "ULTIMA",
-}
-
-type UserPBs = {
-    success:boolean,
-    description:string,
-    body:{
-        pbs:UserPB[],
-        charts:SongChart[]
-    }
 }
 
 type Chu3UserPBsRes = {

@@ -99,7 +99,7 @@ app.listen(80, () => {
 
 	new AimedbServlette({
 		aimedb:{
-			listen_address:config.ALLNET_HOST,
+			listen_address:"0.0.0.0",
 			loglevel:"info",
 			port:22345,
 			key: config.AIME_KEY,
