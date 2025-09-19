@@ -163,9 +163,7 @@ class AimedbServlette {
 		const response = Buffer.alloc(length)
 
 		response.writeUInt16LE(0x0c,0x04)
-		response.writeUInt16LE(0x00,0x05)
-		response.writeUInt16LE(0x01,0x08)
-		response.writeUInt16LE(0x00,0x09)
+		response.writeUInt16LE(1,0x08)
 
 		return response;
 	}
@@ -203,8 +201,6 @@ class AimedbServlette {
 			userId = parseInt(foundCard.extId);
 		}
 
-		console.log(userId)
-
 		const response = Buffer.alloc(0x130)
 
 		response.writeUInt16LE(0x10,0x04)
@@ -214,9 +210,20 @@ class AimedbServlette {
 
 		return response;
 	}
-	async handle_felica_lookup(data: Buffer, resp_code: number): Promise<any> {
-		// Implement logic
-		return {};
+	async handle_felica_lookup(msg: Buffer, resp_code: number): Promise<any> {
+		const idm = msg.readBigUInt64BE(0x20);
+
+		const accessCode = idm.toString().replace("-", "").padStart(20, "0");
+
+		log("aime", `> Response: ${accessCode}`);
+
+		const response = Buffer.alloc(0x30);
+
+		response.writeUInt16LE(0x03, 0x04);
+		response.writeUInt16LE(1, 0x08);
+		Buffer.from(accessCode, "hex").copy(response, 0x24);
+
+		return response;
 	}
 	async handle_felica_register(data: Buffer, resp_code: number): Promise<any> {
 		// Implement logic
