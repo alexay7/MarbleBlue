@@ -77,7 +77,7 @@ gekiCMRouter.post("/CMGetUserItemApi", async (req:Request, res) => {
 
 	const kind = Math.floor(req.body.nextIndex / 10000000000);
 
-	const userItems = await GekiUserItem.find({userId: req.body.userId}, {_id:0, userId:0, __v:0}).lean();
+	const userItems = await GekiUserItem.find({userId: req.body.userId, itemKind: kind}, {_id:0, userId:0, __v:0}).lean();
 
 	if (!userItems) return res.json({
 		userId:req.body.userId,

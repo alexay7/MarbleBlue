@@ -373,8 +373,8 @@ chu3Router.post("/ChuniServlet/GetUserOptionApi", async (req:Request, res) => {
 chu3Router.post("/ChuniServlet/GetUserCharacterApi", async (req:Request, res) => {
 	if (!req.body.userId) return res.json({});
 
-	let nextIndex = req.body.nextIndex || 0;
-	const limit = req.body.maxCount || 300;
+	let nextIndex = parseInt(req.body.nextIndex) || 0;
+	const limit = parseInt(req.body.maxCount) || 300;
 
 	const userCharacters = await Chu3UserCharacter.find({cardId: req.body.userId}, {_id:0, cardId:0, __v:0}).skip(nextIndex).limit(limit+1).lean();
 
@@ -420,11 +420,11 @@ chu3Router.post("/ChuniServlet/GetUserActivityApi", async (req:Request, res) => 
 chu3Router.post("/ChuniServlet/GetUserItemApi", async (req:Request, res) => {
 	if (!req.body.userId) return res.json({});
 
-	const limit = req.body.maxCount || 300;
+	const limit = parseInt(req.body.maxCount) || 300;
 	const kind = Math.floor(req.body.nextIndex / 10000000000);
-	let nextIndex = req.body.nextIndex % 10000000000 || 0;
+	let nextIndex = parseInt(req.body.nextIndex) % 10000000000 || 0;
 
-	const userItems = await Chu3UserItem.find({cardId: req.body.userId}, {_id:0, cardId:0, __v:0}).skip(nextIndex).limit(limit+1).lean();
+	const userItems = await Chu3UserItem.find({cardId: req.body.userId, itemKind:kind}, {_id:0, cardId:0, __v:0}).skip(nextIndex).limit(limit+1).lean();
 
 	if (!userItems) return res.json({
 		userId:req.body.userId,
@@ -472,7 +472,7 @@ chu3Router.post("/ChuniServlet/GetUserMusicApi", async (req:Request, res) => {
 			_id: "$musicId",
 			musicDetails: { $addToSet: "$$ROOT" }
 		})
-		.sort({musicId: 1})
+		.sort({_id: 1})
 		.skip(nextIndex)
 		.limit(limit + 1);
 
@@ -532,8 +532,8 @@ chu3Router.post("/ChuniServlet/GetUserChargeApi", (req:Request, res) => {
 chu3Router.post("/ChuniServlet/GetUserCourseApi", async (req:Request, res) => {
 	if(!req.body.userId) return res.json({});
 
-	const limit = req.body.maxCount || 50;
-	let nextIndex = req.body.nextIndex || 0;
+	const limit = parseInt(req.body.maxCount) || 50;
+	let nextIndex = parseInt(req.body.nextIndex) || 0;
 
 	const foundUserCourses = await Chu3UserCourse.find({cardId: req.body.userId}).skip(nextIndex).limit(limit+1).lean();
 
@@ -577,16 +577,16 @@ chu3Router.post("/ChuniServlet/GetUserCMissionListApi", async (req:Request, res)
 chu3Router.post("/ChuniServlet/GetUserFavoriteItemApi", async (req:Request, res) => {
 	if (!req.body.userId) return res.json({});
 
-	let nextIndex = req.body.nextIndex || 0;
-	const limit = req.body.maxCount || 50;
-	const kind = req.body.kind || 0;
+	let nextIndex = parseInt(req.body.nextIndex) || 0;
+	const limit = parseInt(req.body.maxCount) || 50;
+	const kind = parseInt(req.body.kind) || 0;
 
 	const userMisc = await Chu3UserMisc.findOne({cardId: req.body.userId}).lean();
 
 	if (!userMisc) return res.json({
 		userId:req.body.userId,
 		length:0,
-		kind:parseInt(kind),
+		kind:kind,
 		nextIndex:-1,
 		userFavoriteItemList:[]
 	});
@@ -594,15 +594,15 @@ chu3Router.post("/ChuniServlet/GetUserFavoriteItemApi", async (req:Request, res)
 	let list:Chu3UserMusicFavoriteType[];
 
 	switch(kind){
-	case "1": {
+	case 1: {
 		list = userMisc.favoriteMusicList;
 		break;
 	}
-	case "2": {
+	case 2: {
 		list = userMisc.rivalList;
 		break;
 	}
-	case "3": {
+	case 3: {
 		list = userMisc.favoriteCharacterList;
 		break;
 	}

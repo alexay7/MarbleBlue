@@ -85,8 +85,8 @@ chu3CMRouter.post("/GetGameGachaCardByIdApi", async (req:Request, res) => {
 chu3CMRouter.post("/CMGetUserCharacterApi", async (req:Request, res) => {
 	if (!req.body.userId) return res.json({});
 
-	let nextIndex = req.body.nextIndex || 0;
-	const limit = req.body.maxCount || 300;
+	let nextIndex = parseInt(req.body.nextIndex) || 0;
+	const limit = parseInt(req.body.maxCount) || 300;
 
 	const userCharacters = await Chu3UserCharacter.find({cardId: req.body.userId}, {_id:0, cardId:0, __v:0}).skip(nextIndex).limit(limit+1).lean();
 
@@ -110,11 +110,11 @@ chu3CMRouter.post("/CMGetUserCharacterApi", async (req:Request, res) => {
 chu3CMRouter.post("/CMGetUserItemApi", async (req:Request, res) => {
 	if (!req.body.userId) return res.json({});
 
-	const limit = req.body.maxCount || 300;
+	const limit = parseInt(req.body.maxCount) || 300;
 	const kind = Math.floor(req.body.nextIndex / 10000000000);
-	let nextIndex = req.body.nextIndex % 10000000000 || 0;
+	let nextIndex = parseInt(req.body.nextIndex) % 10000000000 || 0;
 
-	const userItems = await Chu3UserItem.find({cardId: req.body.userId}, {_id:0, cardId:0, __v:0}).skip(nextIndex).limit(limit+1).lean();
+	const userItems = await Chu3UserItem.find({cardId: req.body.userId, itemKind: kind}, {_id:0, cardId:0, __v:0}).skip(nextIndex).limit(limit+1).lean();
 
 	if (!userItems) return res.json({
 		userId:req.body.userId,
