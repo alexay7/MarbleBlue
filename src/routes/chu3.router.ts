@@ -445,7 +445,7 @@ chu3Router.post("/ChuniServlet/GetUserActivityApi", async (req: Request, res) =>
 		_id: 0,
 		cardId: 0,
 		__v: 0
-	}).lean();
+	}).sort({_id:-1}).lean();
 
 	if (!userActivity.length) return res.json({
 		userId: req.body.userId,
