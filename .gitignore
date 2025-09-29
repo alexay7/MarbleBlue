@@ -33,8 +33,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 
-.env
-
 #All files inside scripts that are not .py
 /scripts/*
 !/scripts/*.py
+
+# Frontend source code is private, sorry
+frontend

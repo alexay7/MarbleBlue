@@ -142,7 +142,8 @@ export type Mai2UpsertUserAllRequest = {
     userTradeItemList:never[];
     userFavoritemusicList:never[];
     userKaleidxScopeList:Mai2UserKaleidxScopeType[];
-
+    userFestaUpdateData:Mai2UserFestaUpdateDataType[];
+    userResultFestaUpdateData:Mai2UserResultFestaUpdateDataType;
     isNewCharacterList:string;
     isNewMapList:string;
     isNewLoginBonusList:string;
@@ -154,4 +155,23 @@ export type Mai2UpsertUserAllRequest = {
     isNewUserIntimateList:string;
     isNewFavoritemusicList:string;
     isNewKaleidxScopeList:string;
+}
+
+type Mai2UserFestaUpdateDataType = {
+    eventId: number;
+    festaPoint:number;
+    clearPoint:number;
+    clearLongMusicCount:number;
+    rallyPoint:number;
+    bonusPoint2p:number;
+    ticketBonusPoint:number;
+    dailyBonusPoint:number;
+    participationRewardGet:boolean;
+    receivedRewardBorder:number;
+}
+
+type Mai2UserResultFestaUpdateDataType = {
+    eventId: number;
+    receivedRewardBorder:number;
+    resultRewardGet:boolean;
 }

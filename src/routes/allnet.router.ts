@@ -2,6 +2,7 @@ import {Router} from "express";
 import {decodeAllNet, toUrl} from "../helpers/allnet.ts";
 import {log} from "../helpers/general.ts";
 import {config} from "../config/config.ts";
+import {Keychip} from "../games/common/models/keychip.model.ts";
 
 const allNetRouter = Router();
 
@@ -28,14 +29,24 @@ function getGameUri(here:string, port:string, gameId:string, ver:string, session
 	}
 }
 
-allNetRouter.post("/servlet/PowerOn", (req, res) => {
+allNetRouter.post("/servlet/PowerOn", async (req, res) => {
 	const here = req.header("AllNet-Forwarded-From") || config.ALLNET_HOST;
 
 	const reqMap = decodeAllNet(req.body);
 
 	log("allnet", `>>> ${JSON.stringify(reqMap)}`);
 
-	//  TODO: Keychip auth
+	const keychip = reqMap["serial"] || "";
+
+	const foundKeychip = await Keychip.findOneAndUpdate({serial: keychip}, {
+		lastLoginDate: new Date()
+	});
+
+	if(!foundKeychip){
+		log("allnet", `Keychip not found: ${keychip}`);
+		res.type("text/plain").send("");
+		return;
+	}
 
 	const gameId = reqMap["game_id"] || "";
 	const ver = reqMap["ver"] || "1.0";

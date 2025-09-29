@@ -454,8 +454,8 @@ gekiRouter.post("/GetUserCardApi", async (req:Request, res) => {
 		nextIndex:-1,
 		userCardList: userCards.map(card => ({
 			...card,
-			kaikaDate: dayjs(card.kaikaDate).format("YYYY-MM-DD HH:mm:ss.0"),
-			choKaikaDate: dayjs(card.choKaikaDate).format("YYYY-MM-DD HH:mm:ss.0"),
+			kaikaDate: card.kaikaDate ? dayjs(card.kaikaDate).format("YYYY-MM-DD HH:mm:ss.0") : undefined,
+			choKaikaDate: card.choKaikaDate ? dayjs(card.choKaikaDate).format("YYYY-MM-DD HH:mm:ss.0") : undefined,
 			created: dayjs(card.created).format("YYYY-MM-DD HH:mm:ss.0"),
 		}))
 	});
@@ -881,8 +881,8 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	if (body.upsertUserAll.userCardList && body.upsertUserAll.userCardList.length>0) {
 		const bulkOps = body.upsertUserAll.userCardList.map(card => {
 			card.userId = body.userId;
-			card.kaikaDate = dayjs(card.kaikaDate).toDate();
-			card.choKaikaDate = dayjs(card.choKaikaDate).toDate();
+			card.kaikaDate = card.kaikaDate ? dayjs(card.kaikaDate).toDate() : undefined;
+			card.choKaikaDate = card.choKaikaDate ? dayjs(card.choKaikaDate).toDate() : undefined;
 			card.created = dayjs(card.created).toDate();
 			return {
 				updateOne: {
@@ -1190,6 +1190,7 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 		await GekiUserRatingLog.bulkWrite(bulkOps);
 	}
 
+	// TODO revisar si esto está funcionando
 	await GekiUserMisc.findOneAndUpdate({userId: body.userId}, {
 		userRecentRatingList: body.upsertUserAll.userRecentRatingList || [],
 		userBpBaseList: body.upsertUserAll.userBpBaseList || [],

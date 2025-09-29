@@ -14,8 +14,8 @@ export type GekiUserCardType = {
     printCount: number;
     useCount: number;
     isNew: boolean;
-    kaikaDate: Date;
-    choKaikaDate: Date;
+    kaikaDate?: Date;
+    choKaikaDate?: Date;
     skillId: number;
     isAcquired: boolean;
     created: Date;
