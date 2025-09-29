@@ -12,6 +12,7 @@ import type {Chu3UserCmissionGameType} from "./usercmission.types.ts";
 import type {Chu3UserCourseType} from "./usercourse.types.ts";
 import type {Chu3UserUCType} from "./userUC.types.ts";
 import type {Chu3UserNetBattleDataType, Chu3UserNetBattleLogType} from "./userNetBattle.types.ts";
+import type {Chu3UserLoginBonusType} from "@/games/chu3/types/userloginbonus.types.ts";
 
 export type Chu3UserDataType = {
     _id: Schema.Types.ObjectId;
@@ -201,7 +202,7 @@ export type Chu3UpsertUserAllRequest = {
         userRatingBaseList?: Chu3UserRatingType[];
         userRatingBaseNextList?: never[];
         userRatingBaseNewList?: never[];
-        userLoginBonusList?: never[];
+        userLoginBonusList?: Chu3UserLoginBonusType[];
         userMapAreaList?: Chu3UserMapAreaType[];
         userEmoneyList?: never[];
         userOverPowerList?: never[];
