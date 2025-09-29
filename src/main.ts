@@ -60,6 +60,13 @@ const allNetEndpointMiddleware:RequestHandler = (req, _, next) => {
 	next();
 };
 
+app.use("/", (req, res, next) => {
+	if (req.originalUrl === "/") {
+		return res.redirect(config.WEBUI_URL);
+	}
+	next();
+});
+
 // Routers
 app.use("/sys/", allNetEndpointMiddleware, text({ type: "*/*" }), allNetRouter);
 
