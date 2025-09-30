@@ -239,7 +239,7 @@ chu3Router.post("/ChuniServlet/GameLoginApi", async (req: Request, res) => {
 });
 
 chu3Router.post("/ChuniServlet/GetGameUCConditionApi", async (_: Request, res) => {
-	const allUCs = await Chu3GameUC.aggregate()
+	const allUCs = await Chu3GameUC.aggregate().match({unlockChallengeId:{$exists:true}})
 		.project({
 			_id: 0,
 			unlockChallengeId: 1,
@@ -285,8 +285,8 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionOpenApi", (_: Request, res) => 
 			length: 1,
 			conditionList: [{
 
-				type: 3,
-				conditionId: 6832,
+				type: 1,
+				conditionId:3020803,
 				logicalOpe: 1,
 				startDate: "2019-01-01 00:00:00",
 				endDate: "2099-11-01 00:00:00",
@@ -307,8 +307,8 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionUnlockApi", (_: Request, res) =
 			length: 1,
 			conditionList: [{
 
-				type: 3,
-				conditionId: 6832,
+				type: 1,
+				conditionId:3020803,
 				logicalOpe: 1,
 				startDate: "2019-01-01 00:00:00",
 				endDate: "2099-11-01 00:00:00",
@@ -881,25 +881,7 @@ chu3Router.post("/ChuniServlet/GetUserLVApi", (req: Request, res) => {
 		userId: req.body.userId,
 		length: 1,
 		nextIndex: -1,
-		userLinkedVerseList: [{
-			linkedVerseId: 10001,
-			progress: "",
-			statusOpen: 1,
-			statusUnlock: 1,
-			isFirstClear: false,
-			numClear: 0,
-			clearCourseId: -1,
-			clearCourseLevel: 0,
-			clearScore: 0,
-			clearDate: null,
-			clearUserId1: 0,
-			clearUserId2: 0,
-			clearUserId3: 0,
-			clearUserName0: "",
-			clearUserName1: "",
-			clearUserName2: "",
-			clearUserName3: ""
-		}],
+		userLinkedVerseList: [{"linkedVerseId":"10001","progress":"","statusOpen":"1","statusUnlock":"1","isFirstClear":"false","numClear":"0","clearCourseId":"-1","clearCourseLevel":"0","clearScore":"0","clearDate":"1970-01-01 09:00:00","clearUserId1":"0","clearUserId2":"0","clearUserId3":"0","clearUserName0":"","clearUserName1":"","clearUserName2":"","clearUserName3":""}],
 	});
 });
 
@@ -910,7 +892,7 @@ chu3Router.post("/ChuniServlet/GetUserRecMusicApi", (req: Request, res) => {
 
 	res.json({
 		userId: req.body.userId,
-		length: 1,
+		length: 0,
 		nextIndex: -1,
 		userRecMusicList: [
 			{
