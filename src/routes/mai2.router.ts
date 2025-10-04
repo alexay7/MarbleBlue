@@ -106,6 +106,60 @@ mai2Router.post("/Maimai2Servlet/GetGameEventApi", async (req:Request, res) => {
 	});
 });
 
+mai2Router.post("/Maimai2Servlet/GetGameFestaApi", async (req:Request, res) => {
+	res.json({
+		gameFestaData:{
+			eventId:250926121,
+			isRallyPeriod:true,
+			isCircleJoinNotAllowed:false,
+			jackingFestaSideId:1,
+			festaSideDataList:[
+				{
+					festaSideId:1,
+					rankInPlace:1,
+					advantagePercent:50
+				},
+				{
+					festaSideId:2,
+					rankInPlace:2,
+					advantagePercent:25
+				},
+				{
+					festaSideId:3,
+					rankInPlace:3,
+					advantagePercent:25
+				}
+			]
+		},
+		gameResultFestaData:{
+			eventId:251016121,
+			resultFestaSideDataList:[{
+				festaSideId:1,
+				rank:1,
+				advantagePercent:50
+			},
+			{
+				festaSideId:2,
+				rank:2,
+				advantagePercent:25
+			},
+			{
+				festaSideId:3,
+				rank:3,
+				advantagePercent:25
+			}]
+		}
+	});
+});
+
+mai2Router.post("/Maimai2Servlet/GetPlaceCircleDataApi", async (req:Request, res) => {
+	res.json({
+		returnCode:1,
+		circleId:1,
+		aggrDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+	});
+});
+
 mai2Router.post("/Maimai2Servlet/GetGameTournamentInfoApi", (_:Request, res) => {
 	res.json({
 		"length": 1,
@@ -568,9 +622,9 @@ mai2Router.post("/Maimai2Servlet/GetUserKaleidxScopeApi", async (req, res) => {
 
 	let foundScopes = await Mai2UserKaleidxScopeModel.find({userId: req.body.userId}).lean();
 
-	if (foundScopes.length<6){
+	if (foundScopes.length<7){
 		// All gates are unlocked by default since circles
-		const gates = [1, 2, 3, 4, 5, 6];
+		const gates = [1, 2, 3, 4, 5, 6, 7];
 		const bulkOps = gates.filter(gateId => !foundScopes.find(scope => scope.gateId === gateId)).map(gateId => {
 			return {
 				insertOne: {
@@ -593,8 +647,96 @@ mai2Router.post("/Maimai2Servlet/GetUserKaleidxScopeApi", async (req, res) => {
 
 	res.json({
 		userId: req.body.userId,
-		length:6,
+		length:7,
 		userKaleidxScopeList:foundScopes
+	});
+});
+
+mai2Router.post("/Maimai2Servlet/GetUserCircleDataApi", async (req:Request, res) => {
+	if (!req.body.userId) return res.json({});
+
+	// Circle Classes:
+	// 0: White
+	// 1: Green
+	// 2: Yellow
+	// 3: Red
+	// 4: Violet
+	// 5: Bronze
+	// 6: Silver
+	// 7: Gold
+	// 8: Rainbow
+
+	res.json({
+		userId: req.body.userId,
+		circleId: 1,
+		circleName: "CHUNI HISPANOS",
+		isPlace: false,
+		circleClass: 7,
+		lastLoginDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+		circlePointRankingList:[{
+			userId: req.body.userId,
+			userName: "A",
+			rank:1,
+			point:7777
+		}]
+	});
+});
+
+mai2Router.post("/Maimai2Servlet/GetUserCirclePointRankingApi", async (req, res) => {
+	if(!req.body.userId) return res.json({});
+
+	res.json({
+		circleId: 1,
+		circleName: "CHUNI HISPANOS",
+		aggrDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+		lastMonthCircleRank: 2,
+		lastMonthPoint: 99999
+	});
+});
+
+mai2Router.post("/Maimai2Servlet/GetUserCirclePointDataApi", async (req, res) => {
+	if(!req.body.userId) return res.json({});
+
+	res.json({
+		userId: req.body.userId,
+		aggDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+		userCirclePointDataList:[{
+			circleId: 1,
+			userName: "A",
+			aggDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+			point: 7777,
+			recordDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+			rewardGet:true
+		}]
+	});
+});
+
+mai2Router.post("/Maimai2Servlet/GetUserFestaApi", async (req, res) => {
+	if(!req.body.userId) return res.json({});
+
+	res.json({
+		userFestaData:{
+			eventId:250926121,
+			circleId:1,
+			festaSideId:1,
+			circleTotalFestaPoint:9999,
+			currentTotalFestaPoint: 200000,
+			circleRankInFestaSide: 1,
+			circleRecordDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+			isDailyBonus:false,
+			participationRewardGet:false,
+			receivedRewardBorder:0
+		},
+		userResultFestaData:{
+			eventId:251016121,
+			circleId:1,
+			circleName:"CHUNI HISPANOS",
+			festaSideId:1,
+			circleRankInFestaSide: 1,
+			receivedRewardBorder:0,
+			circleTotalFestaPoint:200000,
+			resultRewardGet:false
+		}
 	});
 });
 

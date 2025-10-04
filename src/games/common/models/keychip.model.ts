@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import type {KeychipType} from "@/games/common/types/keychip.types.ts";
+import type {KeychipType} from "../types/keychip.types.ts";
 
 const keychipSchema = new Schema<KeychipType>({
 	serial: { type: String, required: true},
