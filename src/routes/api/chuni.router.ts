@@ -1,0 +1,434 @@
+import {type Request, Router} from "express";
+import {Chu3UserData} from "../../games/chu3/models/userdata.model.ts";
+import {Chu3UserCharacter} from "../../games/chu3/models/usercharacter.model.ts";
+import {Chu3UserTeam} from "../../games/chu3/models/userteam.model.ts";
+import {Chu3GameTrophy} from "../../games/chu3/models/gametrophy.model.ts";
+import {Chu3UserMisc} from "../../games/chu3/models/usermisc.model.ts";
+import {Chu3GameMusic} from "../../games/chu3/models/gamemusic.model.ts";
+import {Chu3GameCharacter} from "../../games/chu3/models/gamecharacter.model.ts";
+import {Chu3UserGameOption} from "../../games/chu3/models/usergameoption.model.ts";
+import {customValidateRequest} from "../../helpers/zod.ts";
+import {
+	UpdateChu3TeamDto,
+	UpdateChu3UserChatSymbolsDto,
+	UpdateChu3UserDataDto,
+	UpdateChu3UserOptionsDto,
+	UpdateChu3UserRivalsDto
+} from "../../dto/chuni.dto.ts";
+import {Chu3UserMusicDetail} from "../../games/chu3/models/usermusicdetail.model.ts";
+import {Chu3GameMap} from "../../games/chu3/models/gamemap.model.ts";
+import {Chu3UserMapArea} from "../../games/chu3/models/usermaparea.model.ts";
+import {Chu3GameCMission} from "../../games/chu3/models/gamecmission.model.ts";
+import {Chu3UserCmission} from "../../games/chu3/models/usercmission.model.ts";
+import {Chu3UserPlaylog} from "../../games/chu3/models/userplaylog.model.ts";
+import {Types} from "mongoose";
+import {Chu3GameSkill} from "../../games/chu3/models/gameskill.model.ts";
+import {Chu3GameCourse} from "../../games/chu3/models/gamecourse.model.ts";
+import {Chu3UserCourse} from "../../games/chu3/models/usercourse.model.ts";
+import {Chu3UserRegion} from "../../games/chu3/models/userregion.model.ts";
+import {Chu3UserItem} from "../../games/chu3/models/useritem.model.ts";
+import {Chu3GameTicket} from "../../games/chu3/models/gameticket.model.ts";
+import {Chu3GameChatSymbol} from "../../games/chu3/models/gamechatsymbol.model.ts";
+import {Chu3Team} from "../../games/chu3/models/team.model.ts";
+import type {Chu3TeamType, Chu3UserTeamType} from "../../games/chu3/types/team.types.ts";
+import type {Chu3UserDataType} from "../../games/chu3/types/userdata.types.ts";
+
+const chuniApiRouter = Router({mergeParams: true});
+
+
+chuniApiRouter.get("/userdata", async (req: Request, res) => {
+	const foundUserData = await Chu3UserData.findOne({cardId: req.cardId}).sort({version: -1});
+
+	res.json(foundUserData);
+});
+
+chuniApiRouter.get("/userchars", async (req: Request, res) => {
+	const foundCharacters = await Chu3UserCharacter.find({cardId: req.cardId});
+
+	res.json(foundCharacters);
+});
+
+chuniApiRouter.get("/usermisc", async (req: Request, res) => {
+	const foundMisc = await Chu3UserMisc.findOne({cardId: req.cardId});
+
+	res.json(foundMisc);
+});
+
+chuniApiRouter.get("/userteam", async (req: Request, res) => {
+	const userTeam = await Chu3UserTeam.aggregate<Chu3UserTeamType & {teamInfo: Chu3TeamType, teamMembers: (Chu3UserTeamType & {info: Partial<Chu3UserDataType> | null})[], memberInfo?: Partial<Chu3UserDataType>[], ownerInfo: {username: string}}>()
+		.match({cardId: req.cardId})
+		.lookup({
+			from: "chu3teams",
+			localField: "teamId",
+			foreignField: "teamId",
+			as: "teamInfo"
+		})
+		.unwind({path: "$teamInfo"})
+		.lookup({
+			from: "chu3userteams",
+			localField: "teamId",
+			foreignField: "teamId",
+			as: "teamMembers"
+		})
+		.lookup({
+			from: "chu3userdatas",
+			let: {members: "$teamMembers.cardId"},
+			pipeline: [
+				{$match: {$expr: {$in: ["$cardId", "$$members"]}}},
+				{$project: {version:1, cardId:1, userName:1, trophyId:1, trophyIdSub1:1, trophyIdSub2:1, level:1, battleRankId:1, playerRating:1, overPowerPoint:1, lastPlayDate:1, characterId:1, classEmblemBase:1, classEmblemMedal:1, overPowertRate:1}}
+			],
+			as: "memberInfo"
+		})
+		.lookup({
+			from: "users",
+			let: {user: "$teamInfo.ownerId"},
+			pipeline: [
+				{$match: {$expr: {$eq: ["$_id", "$$user"]}}},
+				{$project: {username: 1}}
+			],
+			as: "ownerInfo"
+		})
+		.unwind({path: "$ownerInfo", preserveNullAndEmptyArrays: true});
+
+	if (userTeam.length === 0) {
+		return res.json({});
+	}
+
+	const [team] = userTeam;
+
+	// Assign the memberinfo to each team member
+	team!.teamMembers.map((member) => {
+		const memberInfo = team!.memberInfo!.sort((a, b) => b.version! - a.version!).find((info) => info.cardId === member.cardId);
+		member.info = memberInfo || null;
+		delete memberInfo?.cardId;
+		return member;
+	});
+
+	// Filter members without info
+	team!.teamMembers = team!.teamMembers.filter((member) => member.info !== null);
+
+	delete team!.memberInfo;
+
+	res.json(team);
+});
+
+chuniApiRouter.get("/options", async (req: Request, res) => {
+	const userOptions = await Chu3UserGameOption.findOne({cardId: req.cardId});
+
+	res.json(userOptions);
+});
+
+chuniApiRouter.get("/userMusic", async (req: Request, res) => {
+	const userMusic = await Chu3UserMusicDetail.find({cardId: req.cardId});
+
+	res.json(userMusic);
+});
+
+chuniApiRouter.get("/userMaps", async (req: Request, res) => {
+	const userMaps = await Chu3UserMapArea.find({cardId: req.cardId});
+
+	res.json(userMaps);
+});
+
+chuniApiRouter.get("/userCMissions", async (req: Request, res) => {
+	const userCMissions = await Chu3UserCmission.find({cardId: req.cardId});
+
+	res.json(userCMissions);
+});
+
+chuniApiRouter.get("/userPlaylog", async (req: Request, res) => {
+	const userPlaylog = await Chu3UserPlaylog.find({cardId: req.cardId}).sort({userPlayDate: -1}).limit(100);
+
+	res.json(userPlaylog);
+});
+
+chuniApiRouter.get("/userPlaylog/:playlogId", async (req: Request, res) => {
+	const userPlaylog = await Chu3UserPlaylog.findById(new Types.ObjectId(req.params.playlogId));
+
+	res.json(userPlaylog);
+});
+
+chuniApiRouter.get("/userCourses", async (req: Request, res) => {
+	const userCourses = await Chu3UserCourse.find({cardId: req.cardId});
+
+	res.json(userCourses);
+});
+
+chuniApiRouter.get("/regions", async (req: Request, res) => {
+	const userRegions = await Chu3UserRegion.find({cardId: req.cardId});
+
+	res.json(userRegions);
+});
+
+chuniApiRouter.get("/items", async (req: Request, res) => {
+	const userItems = await Chu3UserItem.find({cardId: req.cardId});
+
+	res.json(userItems);
+});
+
+
+// GAME
+chuniApiRouter.get("/trophies", async (req: Request, res) => {
+	const gameTrophies = await Chu3GameTrophy.find().sort({id: 1});
+
+	res.json(gameTrophies);
+});
+
+chuniApiRouter.get("/music", async (req: Request, res) => {
+	const gameMusic = await Chu3GameMusic.find({worldsEndType: "Invalid"}).sort({sortName: 1});
+
+	res.json(gameMusic);
+});
+
+chuniApiRouter.get("/wemusic", async (req: Request, res) => {
+	const gameMusic = await Chu3GameMusic.find({worldsEndType: {$ne: "Invalid"}}).sort({sortName: 1});
+
+	res.json(gameMusic);
+});
+
+chuniApiRouter.get("/characters", async (req: Request, res) => {
+	const gameCharacters = await Chu3GameCharacter.find().sort({sortName: 1});
+
+	res.json(gameCharacters);
+});
+
+chuniApiRouter.get("/maps", async (req: Request, res) => {
+	const gameMaps = await Chu3GameMap.find().sort({id: 1});
+
+	res.json(gameMaps);
+});
+
+chuniApiRouter.get("/cmissions", async (req: Request, res) => {
+	const gameCMissions = await Chu3GameCMission.find().sort({id: 1});
+
+	res.json(gameCMissions);
+});
+
+chuniApiRouter.get("/skills", async (req: Request, res) => {
+	const gameSkills = await Chu3GameSkill.find().sort({id: 1});
+
+	res.json(gameSkills);
+});
+
+chuniApiRouter.get("/courses", async (req: Request, res) => {
+	const gameCourses = await Chu3GameCourse.find().sort({id: 1});
+
+	res.json(gameCourses);
+});
+
+chuniApiRouter.get("/tickets", async (req: Request, res) => {
+	const tickets = await Chu3GameTicket.find().sort({id: 1});
+
+	res.json(tickets);
+});
+
+chuniApiRouter.get("/chatsymbols", async (req: Request, res) => {
+	const gameChatSymbols = await Chu3GameChatSymbol.find().sort({id: 1});
+
+	res.json(gameChatSymbols);
+});
+
+chuniApiRouter.get("/teams", async (req: Request, res) => {
+	const teams = await Chu3Team.aggregate()
+		.lookup({
+			from: "chu3userteams",
+			localField: "teamId",
+			foreignField: "teamId",
+			as: "members"
+		})
+		.addFields({
+			memberCount: {$size: "$members"}
+		})
+		.project({members: 0});
+
+	res.json(teams);
+});
+
+// PATCH
+chuniApiRouter.patch("/options",
+	customValidateRequest({
+		body: UpdateChu3UserOptionsDto
+	}),
+	async (req: Request, res) => {
+		const updatedOptions = await Chu3UserGameOption.findOneAndUpdate(
+			{cardId: req.cardId},
+			{$set: req.body},
+			{new: true, upsert: true}
+		);
+
+		res.json(updatedOptions);
+	}
+);
+
+chuniApiRouter.patch("/userdata",
+	customValidateRequest({
+		body: UpdateChu3UserDataDto
+	}),
+	async (req: Request, res) => {
+		const updatedUserData = await Chu3UserData.findOneAndUpdate(
+			{cardId: req.cardId, version:req.body.version},
+			{$set: req.body},
+			{new: true, upsert: true}
+		);
+
+		res.json(updatedUserData);
+	}
+);
+
+chuniApiRouter.patch("/rivals",
+	customValidateRequest({
+		body: UpdateChu3UserRivalsDto
+	}),
+	async (req: Request, res) => {
+		if (!req.body.rivals) return res.status(400).json({message: "No rivals provided"});
+
+		const updatedUserMisc = await Chu3UserMisc.findOneAndUpdate(
+			{cardId: req.cardId},
+			{$set: {rivalList: req.body.rivals}},
+			{new: true, upsert: true}
+		);
+
+		res.json(updatedUserMisc);
+	}
+);
+
+chuniApiRouter.patch("/chatsymbols",
+	customValidateRequest({
+		body: UpdateChu3UserChatSymbolsDto
+	}),
+	async (req: Request, res) => {
+		if (!req.body.chatSymbols) return res.status(400).json({message: "No chat symbols provided"});
+
+		const updatedUserMisc = await Chu3UserMisc.findOneAndUpdate(
+			{cardId: req.cardId},
+			{$set: {chatSymbols: req.body.chatSymbols}},
+			{new: true, upsert: true}
+		);
+
+		res.json(updatedUserMisc);
+	}
+);
+
+// POST
+chuniApiRouter.post("/team/:teamId/join", async (req: Request, res) => {
+	const chuniAccount = await Chu3UserData.findOne({cardId: req.cardId});
+	if (!chuniAccount) {
+		return res.status(403).json({message: "You have not played"});
+	}
+
+	const teamId = parseInt(req.params.teamId!);
+
+	if (isNaN(teamId)) return res.status(400).json({message: "Invalid team ID"});
+
+	const existingMembership = await Chu3UserTeam.findOne({cardId: req.cardId});
+	if (existingMembership) {
+		return res.status(400).json({message: "You are already in a team"});
+	}
+
+	const team = await Chu3Team.findOne({teamId: teamId});
+	if (!team) {
+		return res.status(404).json({message: "Team not found"});
+	}
+
+	const memberCount = await Chu3UserTeam.countDocuments({teamId: teamId});
+	if (memberCount >= 20) {
+		return res.status(400).json({message: "Team is full"});
+	}
+	const newMembership = await Chu3UserTeam.create({
+		cardId: req.cardId,
+		teamId: teamId
+	});
+
+	res.json(newMembership);
+});
+
+chuniApiRouter.post("/team/create",
+	customValidateRequest({
+		body: UpdateChu3TeamDto
+	}),
+	async (req, res) => {
+		const chuniAccount = await Chu3UserData.findOne({cardId: req.cardId});
+		if (!chuniAccount) {
+			return res.status(403).json({message: "You have not played"});
+		}
+
+		const existingMembership = await Chu3UserTeam.findOne({cardId: req.cardId});
+		if (existingMembership) {
+			return res.status(400).json({message: "You are already in a team"});
+		}
+
+		const existingTeamWithName = await Chu3Team.findOne({name: req.body.teamName});
+		if (existingTeamWithName) {
+			return res.status(400).json({message: "A team with that name already exists"});
+		}
+
+		const existingTeamWithOwner = await Chu3Team.findOne({ownerId: req.currentUser?._id});
+		if (existingTeamWithOwner) {
+			return res.status(400).json({message: "You already own a team"});
+		}
+
+		const highestTeam = await Chu3Team.findOne().sort({teamId: -1});
+		const nextTeamId = highestTeam ? highestTeam.teamId + 1 : 1;
+
+		const newTeam = await Chu3Team.create({
+			teamId: nextTeamId,
+			teamName:req.body.teamName,
+			ownerId: req.currentUser?._id
+		});
+
+		const newMembership = await Chu3UserTeam.create({
+			cardId: req.cardId,
+			teamId: newTeam.teamId
+		});
+
+		res.json(newMembership);
+	});
+
+chuniApiRouter.post("/team/leave", async (req: Request, res) => {
+	const existingMembership = await Chu3UserTeam.findOne({cardId: req.cardId});
+	if (!existingMembership) {
+		return res.status(400).json({message: "You are not in a team"});
+	}
+
+	const team = await Chu3Team.findOne({teamId: existingMembership.teamId});
+	if (!team) {
+		// Should not happen, but just in case
+		await existingMembership.deleteOne();
+		return res.status(400).json({message: "Your team no longer exists, you have been removed from it"});
+	}
+
+	if (team.ownerId.toString() === req.currentUser?._id.toString()) {
+		return res.status(400).json({message: "You are the owner of the team, you cannot leave. You can delete the team if you want to disband it."});
+	}
+
+	await existingMembership.deleteOne();
+
+	res.json({message: "success"});
+});
+
+chuniApiRouter.post("/team/disband", async (req: Request, res) => {
+	const existingMembership = await Chu3UserTeam.findOne({cardId: req.cardId});
+	if (!existingMembership) {
+		return res.status(400).json({message: "You are not in a team"});
+	}
+
+	const team = await Chu3Team.findOne({teamId: existingMembership.teamId});
+	if (!team) {
+		// Should not happen, but just in case
+		await existingMembership.deleteOne();
+		return res.status(400).json({message: "Your team no longer exists, you have been removed from it"});
+	}
+
+	if (team.ownerId.toString() !== req.currentUser?._id.toString()) {
+		return res.status(400).json({message: "You are not the owner of the team, only the owner can disband the team"});
+	}
+
+	// Delete all memberships
+	await Chu3UserTeam.deleteMany({teamId: team.teamId});
+	// Delete the team
+	await team.deleteOne();
+
+	res.json({message: "success"});
+});
+
+export default chuniApiRouter;

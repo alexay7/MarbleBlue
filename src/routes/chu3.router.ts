@@ -121,7 +121,7 @@ chu3Router.post("/ChuniServlet/GetGameChargeApi", (_: Request, res) => {
 		"gameChargeList": [
 			{
 				orderId: 0,
-				chargeId: 3060,
+				chargeId: 2060,
 				startDate: "2019-01-01 00:00:00.0",
 				endDate: "2099-11-01 00:00:00.0",
 				price: 1,
@@ -801,11 +801,7 @@ chu3Router.post("/ChuniServlet/GetUserSymbolChatSettingApi", async (req: Request
 	res.json({
 		userId: req.body.userId,
 		length: userMisc.chatSymbols.length,
-		symbolChatInfoList: userMisc.chatSymbols.map((s, i) => ({
-			sceneId: i + 1,
-			symbolId: s,
-			orderId: i
-		}))
+		symbolChatInfoList: userMisc.chatSymbols
 	});
 });
 
@@ -881,7 +877,7 @@ chu3Router.post("/ChuniServlet/GetUserLVApi", (req: Request, res) => {
 		userId: req.body.userId,
 		length: 1,
 		nextIndex: -1,
-		userLinkedVerseList: [{"linkedVerseId":"10001","progress":"","statusOpen":"1","statusUnlock":"1","isFirstClear":"false","numClear":"0","clearCourseId":"-1","clearCourseLevel":"0","clearScore":"0","clearDate":"1970-01-01 09:00:00","clearUserId1":"0","clearUserId2":"0","clearUserId3":"0","clearUserName0":"","clearUserName1":"","clearUserName2":"","clearUserName3":""}],
+		userLinkedVerseList: [{"linkedVerseId":"10001", "progress":"", "statusOpen":"1", "statusUnlock":"1", "isFirstClear":"false", "numClear":"0", "clearCourseId":"-1", "clearCourseLevel":"0", "clearScore":"0", "clearDate":"1970-01-01 09:00:00", "clearUserId1":"0", "clearUserId2":"0", "clearUserId3":"0", "clearUserName0":"", "clearUserName1":"", "clearUserName2":"", "clearUserName3":""}],
 	});
 });
 
@@ -1224,20 +1220,26 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 		"userUnlockChallengeList",
 		"userNetBattlelogList",
 		"userNetBattleData",
-		"userLoginBonusList"
+		"userLoginBonusList",
+		"userRatingBaseNewList",
+		"userRatingBaseNextList",
 	];
 
 	// MISC
 	const recentRating = body.upsertUserAll.userRecentRatingList || [];
 	const ratingHot = body.upsertUserAll.userRatingBaseHotList || [];
 	const ratingBase = body.upsertUserAll.userRatingBaseList || [];
+	const newRating = body.upsertUserAll.userRatingBaseNewList || [];
+	const nextRating = body.upsertUserAll.userRatingBaseNextList || [];
 	const favoriteMusic = (body.upsertUserAll.userFavoriteMusicList || []).filter(m => m.id > -1);
 
 	await Chu3UserMisc.findOneAndUpdate({cardId: body.userId}, {
 		recentRatingList: recentRating,
 		ratingBaseHotList: ratingHot,
 		ratingBaseList: ratingBase,
-		favoriteMusicList: favoriteMusic
+		ratingBaseNextList: nextRating,
+		ratingBaseNewList: newRating,
+		favoriteMusicList: favoriteMusic,
 	}, {upsert: true});
 
 	if (Object.keys(body.upsertUserAll).some(key => !implementedFields.includes(key) && (body.upsertUserAll)[key] && (body.upsertUserAll)[key].length > 0)) {
@@ -1291,7 +1293,7 @@ const noOpEndpoints = [
 	"GetUserCtoCPlay",
 	"GetUserDuel",
 	"UpsertUserChargelogApi",
-	"Ping"
+	"Ping",
 ].map(ep => "/ChuniServlet/" + ep);
 
 chu3Router.post(noOpEndpoints, noOpFunction);

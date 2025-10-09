@@ -9,7 +9,7 @@ const chu3UserTeamSchema = new Schema<Chu3UserTeamType>({
 	teamId: {type: Number, ref: "Chu3Team", required: true},
 
 	currentPoints: {type: Number, default: 0},
-	currentPeriod: {type: String, default: "2024-01"}
+	currentPeriod: {type: String, default: "2000-01"}
 });
 
 chu3UserTeamSchema.index({cardId: 1}, {unique:true});

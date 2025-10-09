@@ -40,7 +40,7 @@ export const UpdateGekiUserOptionsDto = z.object({
 	headphone: z.number().min(0).max(10)
 });
 
-export const UpdateGekiUserDataDto = z.object({
+export const UpdateGekiUserDataDto = z.strictObject({
 	userName: z.string().min(1).regex(/^[Ａ-Ｚａ-ｚ０-９ぁ-んァ-ヶー一-龠々・．：；？！～／＋－×÷＝♂♀∀＃＆＊＠☆○◎◇□△▽♪†‡ΣαβγθφψωДё]+$/).optional(),
 	cardId: z.number().optional(),
 	nameplateId: z.number().optional(),

@@ -13,6 +13,11 @@ services:
       - DEFAULT_CHU3_MATCHING_URI=
       - DEFAULT_CHU3_MATCHING_REFLECTOR=
       - SCORES_SERVER=
+      - WEBUI_URL=
+      - SESSION_SECRET=
+      - DISCORD_CLIENT_ID=
+      - DISCORD_CLIENT_SECRET=
+      - ADMIN_ID=
     depends_on:
       - db
   db:

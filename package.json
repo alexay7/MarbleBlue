@@ -36,6 +36,7 @@
     "http-errors": "^2.0.0",
     "jiti": "^2.5.1",
     "mongoose": "^8.18.1",
+    "nodemon": "^3.1.10",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "wtf-8": "^1.0.1",

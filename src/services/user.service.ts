@@ -3,6 +3,9 @@ import {Card} from "../games/common/models/card.model.ts";
 import {Types} from "mongoose";
 
 export const userService = {
+	getUserData: async ( req: Request, res: Response) => {
+		return res.json(req.currentUser);
+	},
 	getUserCards: async ( req: Request, res: Response) => {
 		const foundCards = await Card.aggregate()
 			.match({userId:new Types.ObjectId(req.currentUser!._id)})
