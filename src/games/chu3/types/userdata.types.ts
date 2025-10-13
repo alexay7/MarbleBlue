@@ -13,6 +13,7 @@ import type {Chu3UserCourseType} from "./usercourse.types.ts";
 import type {Chu3UserUCType} from "./userUC.types.ts";
 import type {Chu3UserNetBattleDataType, Chu3UserNetBattleLogType} from "./userNetBattle.types.ts";
 import type {Chu3UserLoginBonusType} from "./userloginbonus.types.ts";
+import type {Chu3UserLVType} from "./userLV.types.ts";
 
 export type Chu3UserDataType = {
     _id: Schema.Types.ObjectId;
@@ -178,7 +179,7 @@ export type Chu3UserDataType = {
 
     // Overpower
     overPowerPoint:number;
-    overPowertRate: number;
+    overPowerRate: number;
     overPowerLowerRank: number;
 }
 
@@ -211,7 +212,7 @@ export type Chu3UpsertUserAllRequest = {
         userCMissionList?: Chu3UserCmissionGameType[];
         userFavoriteMusicList?: Chu3UserMusicFavoriteType[];
         userUnlockChallengeList?: Chu3UserUCType[];
-        userLinkedVerseList?: never[];
+        userLinkedVerseList?: Chu3UserLVType[];
         isNewCharacterList:string;
         isNewMusicDetailList:string;
         isNewItemList:string;

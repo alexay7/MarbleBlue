@@ -105,7 +105,7 @@ const chu3UserDataSchema = new Schema<Chu3UserDataType>({
 	skillId:{ type:Number},
 	stageId:{ type:Number},
 	overPowerPoint:{ type:Number},
-	overPowertRate:{ type:Number},
+	overPowerRate:{ type:Number},
 	overPowerLowerRank:{ type:Number},
 });
 

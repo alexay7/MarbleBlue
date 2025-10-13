@@ -1,8 +1,8 @@
 import pymongo
 
-CARD_ID="3144402542"
+CARD_ID=""
 
-client = pymongo.MongoClient("mongodb://10.0.0.150:27017/")
+client = pymongo.MongoClient("")
 
 db = client["MarbleBlue"]
 

@@ -31,6 +31,8 @@ import {Chu3GameLoginBonus} from "../games/chu3/models/gameloginbonus.model.ts";
 import {Chu3UserLoginBonus} from "../games/chu3/models/userloginbonus.model.ts";
 import {Chu3GameMapConditions} from "../games/chu3/models/gamemapconditions.model.ts";
 import {CHU3VERSIONS} from "../games/chu3/config.ts";
+import {Chu3GameCharge} from "../games/chu3/models/gamecharge.model.ts";
+import {Chu3UserLV} from "../games/chu3/models/userLV.model.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -115,21 +117,19 @@ chu3Router.post("/ChuniServlet/GetGameEventApi", async (_: Request, res) => {
 	});
 });
 
-chu3Router.post("/ChuniServlet/GetGameChargeApi", (_: Request, res) => {
+chu3Router.post("/ChuniServlet/GetGameChargeApi", async(_: Request, res) => {
+	const gameCharges = await Chu3GameCharge.find({}, {_id: 0}).lean();
+
 	const response = {
-		"length": 1,
-		"gameChargeList": [
-			{
-				orderId: 0,
-				chargeId: 2060,
-				startDate: "2019-01-01 00:00:00.0",
-				endDate: "2099-11-01 00:00:00.0",
-				price: 1,
-				saleEndDate: "2099-11-01 00:00:00.0",
-				salePrice: 1,
-				saleStartDate: "2019-01-01 00:00:00.0",
-			}
-		]
+		"length": gameCharges.length,
+		"gameChargeList": gameCharges.map((charge, i) => ({
+			...charge,
+			orderId:i,
+			startDate: "2019-01-01 00:00:00.0",
+			endDate: "2099-11-01 00:00:00.0",
+			saleEndDate: "2099-11-01 00:00:00.0",
+			saleStartDate: "2019-01-01 00:00:00.0",
+		}))
 	};
 
 	res.json(response);
@@ -858,7 +858,7 @@ chu3Router.post("/ChuniServlet/GetUserUCApi", async (req: Request, res) => {
 	const foundUCs = await Chu3UserUC.aggregate()
 		.match({cardId: req.body.userId})
 		.addFields({
-			clearDate: {$dateToString: {format: "%Y-%m-%d %H:%M:%S}", date: "$clearDate", timezone: "Asia/Tokyo"}}
+			clearDate: {$dateToString: {format: "%Y-%m-%d %H:%M:%S", date: "$clearDate", timezone: "Asia/Tokyo"}}
 		})
 		.project({_id: 0});
 
@@ -869,22 +869,54 @@ chu3Router.post("/ChuniServlet/GetUserUCApi", async (req: Request, res) => {
 	});
 });
 
-chu3Router.post("/ChuniServlet/GetUserLVApi", (req: Request, res) => {
+chu3Router.post("/ChuniServlet/GetUserLVApi", async (req: Request, res) => {
 	if (!req.body.userId) return res.json({});
 
-	// LINKED VERSE
+	const foundLVs = await Chu3UserLV.aggregate()
+		.match({cardId: req.body.userId})
+		.addFields({
+			clearDate: {$dateToString: {format: "%Y-%m-%d %H:%M:%S", date: "$clearDate", timezone: "Asia/Tokyo"}}
+		})
+		.project({_id: 0});
+
 	res.json({
 		userId: req.body.userId,
-		length: 1,
+		length: foundLVs.length,
 		nextIndex: -1,
-		userLinkedVerseList: [{"linkedVerseId":"10001", "progress":"", "statusOpen":"1", "statusUnlock":"1", "isFirstClear":"false", "numClear":"0", "clearCourseId":"-1", "clearCourseLevel":"0", "clearScore":"0", "clearDate":"1970-01-01 09:00:00", "clearUserId1":"0", "clearUserId2":"0", "clearUserId3":"0", "clearUserName0":"", "clearUserName1":"", "clearUserName2":"", "clearUserName3":""}],
+		userLinkedVerseList: foundLVs,
 	});
 });
 
-chu3Router.post("/ChuniServlet/GetUserRecMusicApi", (req: Request, res) => {
-	// TODO inventarme un algoritmo
-	// Límite 25 canciones
+chu3Router.post("/ChuniServlet/GetUserRecMusicApi", async (req: Request, res) => {
 	if (!req.body.userId) return res.json({});
+
+	const popularSongs = await Chu3UserPlaylog.aggregate()
+		.match({
+			playDate: {
+				$gte: dayjs().subtract(30, "day").toDate()
+			}
+		})
+		.group({
+			_id: {musicId: "$musicId"},
+			playCount: {$sum: 1}
+		})
+		.sort({playCount: -1})
+		.limit(25)
+		.project({
+			_id: 0,
+			musicId: "$_id.musicId",
+			playCount: 1
+		});
+
+	if (!popularSongs.length) return res.json({
+		userId: req.body.userId,
+		length: 0,
+		nextIndex: -1,
+		userRecMusicList: []
+	});
+
+	// Create a string with the format musicId,difficultyId;musicId,difficultyId
+	const recMusicList = popularSongs.map(s => `${s.musicId},1`).join(";");
 
 	res.json({
 		userId: req.body.userId,
@@ -892,15 +924,32 @@ chu3Router.post("/ChuniServlet/GetUserRecMusicApi", (req: Request, res) => {
 		nextIndex: -1,
 		userRecMusicList: [
 			{
-				musicId: 1,
-				recMusicList: "2554,3;2557,3"
+				musicId:1,
+				recMusicList
 			}
 		]
 	});
 });
 
-chu3Router.post("/ChuniServlet/GetUserRecRatingApi", (req: Request, res) => {
-	// TODO inventarme un algoritmo
+chu3Router.post("/ChuniServlet/GetUserRecRatingApi", async (req: Request, res) => {
+	// Get user candidate songs
+	if (!req.body.userId) return res.json({});
+
+	const userMisc = await Chu3UserMisc.findOne({cardId: req.body.userId}).lean();
+
+	if (!userMisc) return res.json({});
+
+	// For each song recommend a level upper of what the user already has
+	const recSongs = (await Promise.all(userMisc.ratingBaseNextList.map(async m=>{
+		if(m.score >= 1009000) return null;
+		else if (m.score >= 1007500) return `${m.musicId},3,16000,1009000`;
+		else if (m.score >= 1005000) return `${m.musicId},3,16000,1007500`;
+		else if (m.score >= 1000000) return `${m.musicId},3,16000,1005000`;
+		else if (m.score >= 990000) return `${m.musicId},3,16000,1000000`;
+		else if (m.score >= 975000) return `${m.musicId},3,16000,990000`;
+		else return `${m.musicId},${m.difficultId},16000,975000`;
+	}))).filter(s=>s!==null);
+
 	res.json({
 		userId: req.body.userId,
 		nextIndex: -1,
@@ -909,7 +958,7 @@ chu3Router.post("/ChuniServlet/GetUserRecRatingApi", (req: Request, res) => {
 			{
 				ratingMin: 0,
 				ratingMax: 3000,
-				recMusicList: "2554,3,16000,1010000;2557,3,16000,1010000"
+				recMusicList: recSongs.join(";")
 			}
 		]
 	});
@@ -979,6 +1028,9 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 
 		newUserData.cardId = body.userId;
 		newUserData.version = version;
+		newUserData.lastPlayDate = dayjs(newUserData.lastPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
+		newUserData.eventWatchedDate = dayjs(newUserData.eventWatchedDate, "YYYY-MM-DD HH:mm:ss").toDate();
+		newUserData.firstPlayDate = dayjs(newUserData.firstPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
 
 		await Chu3UserData.findOneAndReplace({cardId: body.userId, version}, newUserData, {upsert: true});
 	}
@@ -1009,6 +1061,8 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	if( body.upsertUserAll.userLoginBonusList && body.upsertUserAll.userLoginBonusList.length > 0) {
 		const bulkOps = body.upsertUserAll.userLoginBonusList.map(bonus => {
 			bonus.cardId = body.userId;
+			bonus.lastUpdateDate = dayjs(bonus.lastUpdateDate, "YYYY-MM-DD HH:mm:ss").toDate();
+
 			return {
 				updateOne: {
 					filter: {cardId: body.userId, presetId: bonus.presetId},
@@ -1026,7 +1080,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 			item.cardId = body.userId;
 			return {
 				updateOne: {
-					filter: {cardId: body.userId, itemId: item.itemId},
+					filter: {cardId: body.userId, itemId: item.itemId, itemKind: item.itemKind},
 					update: {$set: item},
 					upsert: true
 				}
@@ -1069,6 +1123,9 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	if (body.upsertUserAll.userPlaylogList && body.upsertUserAll.userPlaylogList.length > 0) {
 		const bulkOps = body.upsertUserAll.userPlaylogList.map(log => {
 			log.cardId = body.userId;
+			log.playDate = dayjs(log.playDate, "YYYY-MM-DD HH:mm:ss").toDate();
+			log.userPlayDate = dayjs(log.userPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
+
 			return {
 				insertOne: {
 					document: log
@@ -1145,6 +1202,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	if (body.upsertUserAll.userCourseList && body.upsertUserAll.userCourseList.length > 0) {
 		const bulkOps = body.upsertUserAll.userCourseList.map(course => {
 			course.cardId = body.userId;
+			course.lastPlayDate = dayjs(course.lastPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
 			return {
 				updateOne: {
 					filter: {cardId: body.userId, courseId: course.courseId},
@@ -1160,6 +1218,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	if (body.upsertUserAll.userUnlockChallengeList && body.upsertUserAll.userUnlockChallengeList.length > 0) {
 		const bulkOps = body.upsertUserAll.userUnlockChallengeList.map(uc => {
 			uc.cardId = body.userId;
+			uc.clearDate = dayjs(uc.clearDate, "YYYY-MM-DD HH:mm:ss").toDate();
 			return {
 				updateOne: {
 					filter: {cardId: body.userId, unlockChallengeId: uc.unlockChallengeId},
@@ -1170,6 +1229,22 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 		});
 
 		await Chu3UserUC.bulkWrite(bulkOps);
+	}
+
+	if(body.upsertUserAll.userLinkedVerseList && body.upsertUserAll.userLinkedVerseList.length > 0) {
+		const bulkOps = body.upsertUserAll.userLinkedVerseList.map(lv => {
+			lv.cardId = body.userId;
+			lv.clearDate = dayjs(lv.clearDate, "YYYY-MM-DD HH:mm:ss").toDate();
+			return {
+				updateOne: {
+					filter: {cardId: body.userId, linkedVerseId: lv.linkedVerseId},
+					update: {$set: lv},
+					upsert: true
+				}
+			};
+		});
+
+		await Chu3UserLV.bulkWrite(bulkOps);
 	}
 
 	if (body.upsertUserAll.userNetBattlelogList && body.upsertUserAll.userNetBattlelogList.length > 0) {
@@ -1223,6 +1298,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 		"userLoginBonusList",
 		"userRatingBaseNewList",
 		"userRatingBaseNextList",
+		"userLinkedVerseList"
 	];
 
 	// MISC
