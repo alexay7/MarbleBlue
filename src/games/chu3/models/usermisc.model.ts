@@ -38,6 +38,7 @@ const chu3UserMiscSchema = new Schema<Chu3UserMiscType>({
 	ratingBaseList: {type: [userRatingSchema], default: []},
 	ratingBaseNextList: {type: [userRatingSchema], default: []},
 	ratingBaseNewList: {type: [userRatingSchema], default: []},
+	userRatingBaseNewNextList: {type: [userRatingSchema], default: []},
 
 	favoriteMusicList: {type: [userMusicFavoriteSchema], default: []},
 	favoriteCharacterList: {type: [userMusicFavoriteSchema], default: []},

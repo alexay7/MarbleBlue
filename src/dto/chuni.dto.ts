@@ -78,3 +78,21 @@ export const UpdateChu3UserChatSymbolsDto = z.object({
 export const UpdateChu3TeamDto = z.object({
 	teamName: z.string().min(1).max(16).optional(),
 });
+
+export const importChu3MusicDto = z.object({
+	musicId: z.number().min(0),
+	level: z.number().min(0).max(4),
+	playCount: z.number().min(0),
+	scoreMax: z.number().min(0).max(10100001),
+	missCount: z.number().min(0),
+	maxComboCount: z.number().min(0),
+	isFullCombo: z.boolean(),
+	isAllJustice: z.boolean(),
+	isSuccess: z.number().min(0),
+	fullChain: z.number().min(0),
+	maxChain: z.number().min(0),
+	scoreRank: z.number().min(1).max(13),
+	isLock: z.boolean(),
+	theoryCount: z.number().min(0),
+	ext1: z.number().min(0),
+})

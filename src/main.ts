@@ -130,9 +130,7 @@ passport.use(
 	})
 );
 
-console.log(config.WEBUI_URL);
-
-app.use("/api", json(), cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}), session({secret: config.SESSION_SECRET, resave: false, saveUninitialized: false}), passport.initialize(), passport.session(), apiRouter, errorMiddleware);
+app.use("/api", json({limit:"10mb"}), cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}), session({secret: config.SESSION_SECRET, resave: false, saveUninitialized: false}), passport.initialize(), passport.session(), apiRouter, errorMiddleware);
 
 app.use(function (_, __, next) {
 	log("error", `404: ${_.originalUrl}`);

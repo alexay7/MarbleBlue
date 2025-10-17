@@ -9,6 +9,7 @@ import {Chu3GameCharacter} from "../../games/chu3/models/gamecharacter.model.ts"
 import {Chu3UserGameOption} from "../../games/chu3/models/usergameoption.model.ts";
 import {customValidateRequest} from "../../helpers/zod.ts";
 import {
+	importChu3MusicDto,
 	UpdateChu3TeamDto,
 	UpdateChu3UserChatSymbolsDto,
 	UpdateChu3UserDataDto,
@@ -32,6 +33,7 @@ import {Chu3GameChatSymbol} from "../../games/chu3/models/gamechatsymbol.model.t
 import {Chu3Team} from "../../games/chu3/models/team.model.ts";
 import type {Chu3TeamType, Chu3UserTeamType} from "../../games/chu3/types/team.types.ts";
 import type {Chu3UserDataType} from "../../games/chu3/types/userdata.types.ts";
+import z from "zod";
 
 const chuniApiRouter = Router({mergeParams: true});
 
@@ -430,5 +432,100 @@ chuniApiRouter.post("/team/disband", async (req: Request, res) => {
 
 	res.json({message: "success"});
 });
+
+chuniApiRouter.post("/music/import",
+	customValidateRequest({
+		body: z.array(importChu3MusicDto).min(1)
+	}),
+	async (req: Request, res) => {
+		const chuniAccount = await Chu3UserData.findOne({cardId: req.cardId});
+
+		if (!chuniAccount) {
+			return res.status(403).json({message: "You have not played"});
+		}
+
+		const currentUserMusic = await Chu3UserMusicDetail.find({cardId: req.cardId});
+		const currentUserMusicMap = new Map(currentUserMusic.map((m) => [`${m.musicId}-${m.level}`, m]));
+
+		const bulkOps = [];
+		for (const musicEntry of req.body) {
+			const existingEntry = currentUserMusicMap.get(`${musicEntry.musicId}-${musicEntry.level}`);
+			if (existingEntry) {
+				// 	update score if higher
+				if (musicEntry.scoreMax > existingEntry.scoreMax) {
+					bulkOps.push({
+						updateOne: {
+							filter: {_id: existingEntry._id},
+							update: {
+								$set: {
+									scoreMax: musicEntry.scoreMax,
+									scoreRank: musicEntry.scoreRank,
+								}
+							}
+						}
+					})
+				}
+
+				// 	Update all justice if true
+				if (musicEntry.isAllJustice && !existingEntry.isAllJustice) {
+					bulkOps.push({
+						updateOne: {
+							filter: {_id: existingEntry._id},
+							update: {
+								$set: {
+									isAllJustice: true,
+									isFullCombo: true,
+								}
+							}
+						}
+					})
+				}
+
+				// 	Update full combo if true
+				else if (musicEntry.isFullCombo && !existingEntry.isFullCombo) {
+					bulkOps.push({
+						updateOne: {
+							filter: {_id: existingEntry._id},
+							update: {
+								$set: {
+									isFullCombo: true,
+								}
+							}
+						}
+					})
+				}
+
+				// 	Update max combo if higher
+				if (musicEntry.maxComboCount > existingEntry.maxComboCount) {
+					bulkOps.push({
+						updateOne: {
+							filter: {_id: existingEntry._id},
+							update: {
+								$set: {
+									maxComboCount: musicEntry.maxComboCount,
+								}
+							}
+						}
+					})
+				}
+			} else {
+				// Insert new entry
+				bulkOps.push({
+					insertOne: {
+						document: {
+							...musicEntry,
+							cardId: req.cardId
+						}
+					}
+				});
+			}
+		}
+
+		if (bulkOps.length > 0) {
+			await Chu3UserMusicDetail.bulkWrite(bulkOps);
+		}
+
+		res.json({message: "Import complete", updated: bulkOps.length});
+	})
 
 export default chuniApiRouter;

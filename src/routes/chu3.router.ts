@@ -285,8 +285,8 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionOpenApi", (_: Request, res) => 
 			length: 1,
 			conditionList: [{
 
-				type: 1,
-				conditionId:3020803,
+				type: 3,
+				conditionId:0,
 				logicalOpe: 1,
 				startDate: "2019-01-01 00:00:00",
 				endDate: "2099-11-01 00:00:00",
@@ -307,8 +307,8 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionUnlockApi", (_: Request, res) =
 			length: 1,
 			conditionList: [{
 
-				type: 1,
-				conditionId:3020803,
+				type: 3,
+				conditionId:0,
 				logicalOpe: 1,
 				startDate: "2019-01-01 00:00:00",
 				endDate: "2099-11-01 00:00:00",
@@ -567,7 +567,7 @@ chu3Router.post("/ChuniServlet/GetUserChargeApi", (req: Request, res) => {
 		userId: req.body.userId,
 		length: 1,
 		userChargeList: req.body.userId === "3144424170" ? [{
-			chargeId: 3060,
+			chargeId: 2060,
 			stock: 1,
 			purchaseDate: "2019-01-01 00:00:00.0",
 			validDate: dayjs().format("YYYY-MM-DD HH:mm:ss.0"),
@@ -650,7 +650,7 @@ chu3Router.post("/ChuniServlet/GetUserFavoriteItemApi", async (req: Request, res
 		break;
 	}
 	case 2: {
-		list = userMisc.rivalList;
+		list = userMisc.rivalList
 		break;
 	}
 	case 3: {
@@ -937,7 +937,7 @@ chu3Router.post("/ChuniServlet/GetUserRecRatingApi", async (req: Request, res) =
 
 	const userMisc = await Chu3UserMisc.findOne({cardId: req.body.userId}).lean();
 
-	if (!userMisc) return res.json({});
+	if (!userMisc||!userMisc.ratingBaseNextList) return res.json({});
 
 	// For each song recommend a level upper of what the user already has
 	const recSongs = (await Promise.all(userMisc.ratingBaseNextList.map(async m=>{
@@ -973,7 +973,7 @@ chu3Router.post("/ChuniServlet/GetUserRivalDataApi", async (req: Request, res) =
 
 	const rivalId = req.body.rivalId || "0";
 
-	const foundRival = userMisc.rivalList.find(r => r.id === rivalId)?.ktAlias;
+	const foundRival = userMisc.rivalList.find(r => r.id.toString() === rivalId.toString())?.ktAlias;
 
 	if (!foundRival) return res.json({});
 
@@ -995,9 +995,11 @@ chu3Router.post("/ChuniServlet/GetUserRivalMusicApi", async (req: Request, res) 
 
 	const rivalId = req.body.rivalId || "0";
 
-	const foundRival = userMisc.rivalList.find(r => r.id === rivalId)?.ktAlias;
+	const foundRival = userMisc.rivalList.find(r => r.id.toString() === rivalId.toString())?.ktAlias;
 
 	if (!foundRival) return res.json({});
+
+	console.log(foundRival)
 
 	const rivalPBs = await getChuniPBs(foundRival);
 
@@ -1298,7 +1300,8 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 		"userLoginBonusList",
 		"userRatingBaseNewList",
 		"userRatingBaseNextList",
-		"userLinkedVerseList"
+		"userRatingBaseNewNextList",
+		"userLinkedVerseList",
 	];
 
 	// MISC
@@ -1307,6 +1310,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	const ratingBase = body.upsertUserAll.userRatingBaseList || [];
 	const newRating = body.upsertUserAll.userRatingBaseNewList || [];
 	const nextRating = body.upsertUserAll.userRatingBaseNextList || [];
+	const nextNewRating = body.upsertUserAll.userRatingBaseNewNextList || [];
 	const favoriteMusic = (body.upsertUserAll.userFavoriteMusicList || []).filter(m => m.id > -1);
 
 	await Chu3UserMisc.findOneAndUpdate({cardId: body.userId}, {
@@ -1316,6 +1320,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 		ratingBaseNextList: nextRating,
 		ratingBaseNewList: newRating,
 		favoriteMusicList: favoriteMusic,
+		userRatingBaseNewNextList: nextNewRating
 	}, {upsert: true});
 
 	if (Object.keys(body.upsertUserAll).some(key => !implementedFields.includes(key) && (body.upsertUserAll)[key] && (body.upsertUserAll)[key].length > 0)) {

@@ -31,6 +31,7 @@ export type Chu3UserMiscType = {
     ratingBaseList: Chu3UserRatingType[];
     ratingBaseNewList: Chu3UserRatingType[];
     ratingBaseNextList: Chu3UserRatingType[];
+    userRatingBaseNewNextList: Chu3UserRatingType[];
 
     favoriteMusicList: Chu3UserMusicFavoriteType[];
     favoriteCharacterList: Chu3UserMusicFavoriteType[];

@@ -203,6 +203,7 @@ export type Chu3UpsertUserAllRequest = {
         userRatingBaseList?: Chu3UserRatingType[];
         userRatingBaseNextList?: Chu3UserRatingType[];
         userRatingBaseNewList?: Chu3UserRatingType[];
+        userRatingBaseNewNextList?: Chu3UserRatingType[];
         userLoginBonusList?: Chu3UserLoginBonusType[];
         userMapAreaList?: Chu3UserMapAreaType[];
         userEmoneyList?: never[];
