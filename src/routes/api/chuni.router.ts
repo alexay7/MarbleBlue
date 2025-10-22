@@ -246,6 +246,15 @@ chuniApiRouter.get("/teams", async (req: Request, res) => {
 	res.json(teams);
 });
 
+chuniApiRouter.get("/ranking", async (req: Request, res) => {
+	const topPlayers = await Chu3UserData.find({version:18})
+		.sort({playerRating: -1})
+		.limit(25)
+		.select({userName:1,playerRating:1});
+
+	res.json(topPlayers);
+});
+
 // PATCH
 chuniApiRouter.patch("/options",
 	customValidateRequest({
