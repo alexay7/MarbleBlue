@@ -6,7 +6,7 @@ services:
         - "22345:22345"
     restart: unless-stopped
     environment:
-      - MONGO_URI=
+      - MONGO_URI=mongodb://db/MarbleBlue
       - ALLNET_HOST=
       - AIME_SECRET=
       - AIME_KEY=
@@ -14,11 +14,11 @@ services:
       - DEFAULT_CHU3_MATCHING_REFLECTOR=
       - SCORES_SERVER=
       - WEBUI_URL=
+      - TZ=Asia/Tokyo
       - SESSION_SECRET=
       - DISCORD_CLIENT_ID=
       - DISCORD_CLIENT_SECRET=
-      - ADMIN_ID=
-      - TZ=
+      - KEYCHIP_AUTH=false
     depends_on:
       - db
   db:
@@ -34,6 +34,20 @@ services:
     volumes:
       - mongo-data:/data/db
     restart: unless-stopped
+#  frontend:
+#    build: .
+#    image: alexay7/marblebluefront:latest
+#    ports:
+#      - "3000:80"
+#    restart: unless-stopped
+#    environment:
+#      - MY_APP_DISCORD_URL=
+#      - MY_APP_SCORES_SERVER=
+#      - MY_APP_API_URL=
+#    volumes:
+#      - ./public:/tmp/public:ro
+#    command: >
+#      sh -c "/docker-entrypoint.d/env.sh && cp -rn /tmp/public/* /usr/share/nginx/html && nginx -g 'daemon off;'"
 
 volumes:
     mongo-data:

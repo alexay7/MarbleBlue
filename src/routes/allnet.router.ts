@@ -42,7 +42,7 @@ allNetRouter.post("/servlet/PowerOn", async (req, res) => {
 		lastLoginDate: new Date()
 	});
 
-	if(!foundKeychip){
+	if(!foundKeychip && config.KEYCHIP_AUTH){
 		log("allnet", `Keychip not found: ${keychip}`);
 		res.type("text/plain").send("");
 		return;

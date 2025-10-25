@@ -334,14 +334,191 @@ def export_chatsymbols():
     with open("chunichatsymbols.json", "w", encoding="utf-8") as f:
         json.dump(symbols, f, ensure_ascii=False, indent=4)
 
-# export_login_bonus()
-# export_events()
-# export_trophies()
-# export_music()
-# export_characters()
-# export_maps()
-# export_cmissions()
-# export_skills()
-# export_classes()
-# export_tickets()
+def export_shop_items():
+    items = []
+    rewards = {
+        "trophies":[],
+        "characters":[],
+        "nameplates":[]
+    }
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if file == "Reward.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                if root_elem.find("name").find("id").text=="0":
+                    continue
+
+                if root_elem.find("substances").find("list").find("RewardSubstanceData").find("trophy").find("trophyName").find("id").text != "-1":
+                    rewards["trophies"].append(int(root_elem.find("substances").find("list").find("RewardSubstanceData").find("trophy").find("trophyName").find("id").text))
+                if root_elem.find("substances").find("list").find("RewardSubstanceData").find("chara").find("charaName").find("id").text != "-1":
+                    rewards["characters"].append(int(root_elem.find("substances").find("list").find("RewardSubstanceData").find("chara").find("charaName").find("id").text))
+                if root_elem.find("substances").find("list").find("RewardSubstanceData").find("namePlate").find("namePlateName").find("id").text != "-1":
+                    rewards["nameplates"].append(int(root_elem.find("substances").find("list").find("RewardSubstanceData").find("namePlate").find("namePlateName").find("id").text))
+
+
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if file == "MapIcon.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                if root_elem.find("name").find("str").text == "ノーマル":
+                    continue
+
+                item = {
+                    "shopId":2,
+                    "itemId": int(root_elem.find("name").find("id").text),
+                    "itemType":"マップアイコン",
+                    "price":20,
+                    "currencyType":"coins",
+                    "imagePath":f"/mapicon/CHU_UI_MapIcon_{root_elem.find('name').find('id').text.zfill(8)}",
+                    "itemName": root_elem.find("name").find("str").text,
+                }
+
+                items.append(item)
+            if file == "NamePlate.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                if root_elem.find("name").find("str").text == "チュウニペンギン" or root_elem.find("name").find("str").text == "ノーマル":
+                    continue
+
+                item = {
+                    "shopId":2,
+                    "itemId": int(root_elem.find("name").find("id").text),
+                    "itemType":"ネームプレート",
+                    "price":20,
+                    "currencyType":"coins",
+                    "imagePath":f"/plate/CHU_UI_NamePlate_{root_elem.find('name').find('id').text.zfill(8)}",
+                    "itemName": root_elem.find("name").find("str").text,
+                }
+
+                # Append if it is not present in rewards
+                if item["itemId"] not in rewards["nameplates"]:
+                    items.append(item)
+            if file == "SystemVoice.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                if root_elem.find("name").find("str").text == "チュウニペンギン":
+                    continue
+
+                item = {
+                    "shopId":2,
+                    "itemId": int(root_elem.find("name").find("id").text),
+                    "itemType":"システムボイス",
+                    "price":20,
+                    "currencyType":"coins",
+                    "imagePath":f"/voice/CHU_UI_SystemVoice_{root_elem.find('name').find('id').text.zfill(8)}",
+                    "itemName": root_elem.find("name").find("str").text,
+                }
+
+                items.append(item)
+            if file == "Trophy.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                if "ALL JUSTICE" in root_elem.find("explainText").text or "ランク" in root_elem.find("explainText").text or "プレイ" in root_elem.find("explainText").text or "スキル発動" in root_elem.find("explainText") or "ACHIEVER" in root_elem.find("explainText").text or "マッチング" in root_elem.find("explainText").text or "達成" in root_elem.find("explainText").text or "RATING" in root_elem.find("explainText").text:
+                    continue
+
+                if root_elem.find("name").find("str").text == "はじめまして" or root_elem.find("name").find("str").text == "NEW COMER":
+                    continue
+
+                item = {
+                    "shopId":2,
+                    "itemId": int(root_elem.find("name").find("id").text),
+                    "itemType":"称号",
+                    "price":20,
+                    "currencyType":"coins",
+                    "rarity": int(root_elem.find("rareType").text),
+                    "imagePath":"",
+                    "itemName": root_elem.find("name").find("str").text,
+                }
+
+                # Append if it is not present in rewards
+                if item["itemId"] not in rewards["trophies"]:
+                    items.append(item)
+            if file == "Chara.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                item_id = root_elem.find("name").find("id").text.zfill(5)
+
+                if root_elem.find("name").find("str").text == "チュウニペンギン":
+                    continue
+
+                item = {
+                    "shopId":3,
+                    "itemId": int(root_elem.find("name").find("id").text),
+                    "itemType":root_elem.find("works").find("str").text if "works" in [child.tag for child in root_elem] else "Original",
+                    "price":50,
+                    "currencyType":"coins",
+                    "series": root_elem.find("works").find("str").text if "works" in [child.tag for child in root_elem] else "Original",
+                    "seriesId": int(root_elem.find("works").find("id").text) if "works" in [child.tag for child in root_elem] else 0,
+                    "imagePath":f"/char/CHU_UI_Character_{item_id[0:4]}_{item_id[4:]}0_02",
+                    "itemName": root_elem.find("name").find("str").text,
+                }
+
+                # Append if it is not present in rewards
+                if item["itemId"] not in rewards["characters"]:
+                    items.append(item)
+            if file == "AvatarAccessory.xml":
+                file_path = os.path.join(root, file)
+                tree = ET.parse(file_path)
+                root_elem = tree.getroot()
+
+                category = root_elem.find("category").text
+                type = ""
+                if category == "1":
+                    type = "Tシャツ"
+                elif category == "2":
+                    type = "帽子"
+                elif category == "3":
+                    type = "フェイス"
+                elif category == "4":
+                    type = "カラー"
+                elif category == "5":
+                    type = "アイテム"
+                elif category == "6":
+                    type = "フロント"
+                elif category == "7":
+                    type = "バック"
+
+                if root_elem.find("name").find("str").text == "ノーマル" or ("CPU" in root_elem.find("name").find("str").text and type!="カラー"):
+                    continue
+
+                item = {
+                    "shopId":4,
+                    "itemId": int(root_elem.find("name").find("id").text),
+                    "itemType": type,
+                    "price":30,
+                    "currencyType":"coins",
+                    "imagePath":f"/avatar/CHU_UI_Avatar_Icon_{root_elem.find('name').find('id').text.zfill(8)}",
+                    "itemName": root_elem.find("name").find("str").text,
+                }
+
+                items.append(item)
+
+    with open("chuniitems.json", "w", encoding="utf-8") as f:
+        json.dump(items, f, ensure_ascii=False, indent=4)
+
+export_login_bonus()
+export_events()
+export_trophies()
+export_music()
+export_characters()
+export_maps()
+export_cmissions()
+export_skills()
+export_classes()
+export_tickets()
 export_chatsymbols()
+export_shop_items()
