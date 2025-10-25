@@ -31,9 +31,8 @@ A server that listen requests and serves responses so that things work for certa
 - `MY_APP_API_URL`: The public address where the API will be reachable from the internet or the local IP of the server if you do not plan on making the server public.
 3. a) Get yourself the game assets needed for the web UI (I can't provide them sorry) and put them in a folder called `public` in the same directory as the `docker-compose.yml` file.
     b) Get yourself the game data needed for the web UI, you can generate it by running the {game}exporter.py file in your game directory.
-4. Rebuild the `frontend` service by running `docker compose up -d --build frontend`.
-5. Run `docker compose up -d` to start the server.
-6. Enjoy!
+4. Run `docker compose up -d` to start the server.
+5. Enjoy!
 
 ## Credit
 - All the devs who contributed to the development of the Artemis and Aqua servers which served as the base for this server.
