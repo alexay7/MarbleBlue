@@ -34,6 +34,7 @@ import {Chu3Team} from "../../games/chu3/models/team.model.ts";
 import type {Chu3TeamType, Chu3UserTeamType} from "../../games/chu3/types/team.types.ts";
 import type {Chu3UserDataType} from "../../games/chu3/types/userdata.types.ts";
 import z from "zod";
+import {Chu3GameShopItem} from "../../games/chu3/models/gameshopitem.model.ts";
 
 const chuniApiRouter = Router({mergeParams: true});
 
@@ -255,6 +256,19 @@ chuniApiRouter.get("/ranking", async (req: Request, res) => {
 	res.json(topPlayers);
 });
 
+chuniApiRouter.get("/shop/:shopId",
+	customValidateRequest({
+		params: z.object({
+			shopId: z.string().transform((val) => parseInt(val)).refine((val) => val>0&&val<5, {message: "Invalid shop ID"})
+		})
+	}),
+	async (req, res) => {
+		const shopItems = await Chu3GameShopItem.find({shopId: req.params.shopId}).sort({price:1, itemId: 1});
+
+		res.json(shopItems);
+	}
+);
+
 // PATCH
 chuniApiRouter.patch("/options",
 	customValidateRequest({
@@ -441,6 +455,79 @@ chuniApiRouter.post("/team/disband", async (req: Request, res) => {
 
 	res.json({message: "success"});
 });
+
+chuniApiRouter.post("/shop/purchase/:articleId",
+	customValidateRequest({
+		params: z.object({
+			articleId: z.string().transform((val) => Types.ObjectId.isValid(val) ? new Types.ObjectId(val) : null).refine((val) => val !== null, {message: "Invalid article ID"})
+		})
+	}),
+	async (req, res) => {
+		const chuniAccount = await Chu3UserData.findOne({cardId: req.cardId}).sort({version: -1});
+		if (!chuniAccount) {
+			return res.status(403).json({message: "general/not_played_yet"});
+		}
+
+		const shopItem = await Chu3GameShopItem.findById(req.params.articleId);
+
+		if (!shopItem) {
+			return res.status(404).json({message: "shop/item_not_found" });
+		}
+
+		if (shopItem.currencyType==="points"){
+			if (chuniAccount.ppoint < shopItem.price) {
+				return res.status(400).json({message: "shop/not_enough_ppoint" });
+			}
+		} else {
+			if (chuniAccount.point < shopItem.price) {
+				return res.status(400).json({message: "shop/not_enough_point" });
+			}
+		}
+
+		let itemType = 0;
+
+		if(shopItem.shopId===1) itemType = 5;
+		else if(shopItem.itemType==="ネームプレート") itemType = 1;
+		else if(shopItem.itemType==="称号") itemType = 3;
+		else if(shopItem.itemType==="マップアイコン") itemType = 8;
+		else if(shopItem.itemType==="システムボイス") itemType = 9;
+
+		if(itemType===0 && shopItem.shopId!==3){
+			return res.status(400).json({message: "shop/invalid_item_type" });
+		}
+
+		// Add item to user inventory
+		if(shopItem.shopId===3){
+			// 	Characters
+			await Chu3UserCharacter.create({
+				cardId: req.cardId,
+				characterId: shopItem.itemId,
+				assignIllust: shopItem.itemId
+			});
+		} else if (shopItem.shopId===1){
+		// 	stockable items
+			await Chu3UserItem.findOneAndUpdate(
+				{cardId: req.cardId, itemId: shopItem.itemId, itemKind: itemType},
+				{$inc: {stock: 1}},
+				{upsert: true}
+			);
+		} else {
+			await Chu3UserItem.create({
+				cardId: req.cardId,
+				itemId: shopItem.itemId,
+				itemKind: itemType,
+			});
+		}
+
+		// Deduct points
+		if (shopItem.currencyType==="points"){
+			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {ppoint: -shopItem.price}})
+		} else {
+			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {point: -shopItem.price}});
+		}
+
+		res.json({message: "success"});
+	})
 
 chuniApiRouter.post("/music/import",
 	customValidateRequest({

@@ -6,8 +6,8 @@ const chu3UserItemSchema = new Schema<Chu3UserItemType>({
 
 	cardId: {type: String, ref: "Card", required: true},
 
-	itemKind: {type: Number},
-	itemId: {type: Number},
+	itemKind: {type: Number, required: true},
+	itemId: {type: Number, required: true},
 	stock: {type: Number, default: 1},
 	isValid: {type: Boolean, default: true},
 });

@@ -13,6 +13,7 @@ const chu3UserDataSchema = new Schema<Chu3UserDataType>({
 	reincarnationNum: { type: Number},
 	exp: { type: Number},
 	point: { type: SchemaTypes.BigInt},
+	ppoint: { type: Number},
 	totalPoint: { type: SchemaTypes.BigInt},
 	playCount: { type: Number},
 	multiPlayCount: { type: Number},

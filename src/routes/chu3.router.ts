@@ -1137,6 +1137,11 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 
 		await Chu3UserPlaylog.bulkWrite(bulkOps);
 
+		// Añadir ppoints por las canciones jugadas (2 por canción)
+		await Chu3UserData.findOneAndUpdate({cardId: body.userId}, {
+			$inc: {ppoint: body.upsertUserAll.userPlaylogList.length * 2}
+		});
+
 		// Actualizar también la región del usuario
 		const [firstLog] = body.upsertUserAll.userPlaylogList;
 		const region = firstLog!.regionId;

@@ -42,6 +42,9 @@ export type Chu3UserDataType = {
     // Monedas
     point: bigint;
 
+    // Ppoints
+    ppoint: number;
+
     // Monedas totales
     totalPoint: bigint;
 

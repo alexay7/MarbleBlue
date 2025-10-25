@@ -22,3 +22,41 @@ Mientras que las canciones recomendadas por recientes no siguen un formato muy c
 "cancion,dificultad,ratingobjetivo,puntuacionobjetivo,comboobjetivo,medallaobjetivo"
 
 Es decir, primero va el id de la canción, después el id de dificultad del 0 al 4, después el rating objetivo con 5 números (ej. 16260 = 16.260) y finalmente la puntuación objetivo.
+
+# Tickets
+Los tickets se renderizan de forma diferente según su rareza:
+- 0: Común (gris)
+- 1: Bronce
+- 2: Plata
+- 3: Oro
+- 4: Oro (conseguir A J en canciones expert)
+- 5: Platino
+- 6: Platino (conseguir AJ en canciones master)
+- 7: Arcoiris
+- 9: Staff de SEGA
+- 10: Ongeki
+- 11: Maimai
+- 13: Platino (amistad con personajes)
+- 14: Arcoiris (amistad con personajes)
+- 15: Phoenix Oro 
+- 16: Phoenix Platino
+- 17: Phoenix Arcoiris
+- 18: Spirit of ...
+- 19: Tribute of ...
+- 20: Legend of ...
+- 21: Finalistas KoP
+- 22: Campeones KoP
+
+# Items
+Los tipos de objetos se clasifican en el juego de la siguiente forma:
+- 1: Placa de nombre
+- 2: Marco
+- 3: Trofeo
+- 4: Habilidad
+- 5: Ticket
+- 6: Regalo
+- 7: Canción (desbloqueo)
+- 8: Icono de mapa
+- 9: Voz del sistema
+- 10: Símbolo de chat
+- 11: Accesorio de avatar
