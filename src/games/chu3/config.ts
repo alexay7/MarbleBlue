@@ -20,6 +20,6 @@ export const CHU3VERSIONS = [
 	{
 		index: 18,
 		roms: ["2.40"],
-		data: "2.40.01"
+		data: "2.40.02"
 	}
 ];

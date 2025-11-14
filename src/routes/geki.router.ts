@@ -41,7 +41,7 @@ dayjs.extend(timezone);
 const gekiRouter = Router({mergeParams:true});
 
 gekiRouter.post("/GetGameSettingApi", (req:Request, res) => {
-	const version = req.params.ver;
+	let version = req.params.ver || "1.00";
 
 	const now = dayjs().tz("Asia/Tokyo");
 
@@ -50,8 +50,8 @@ gekiRouter.post("/GetGameSettingApi", (req:Request, res) => {
 
 	res.json({
 		gameSetting:{
-			dataVersion:`${version}.00`,
-			onlineDataVersion:`${version}.00`,
+			dataVersion:version,
+			onlineDataVersion:version,
 			isMaintenance:false,
 			requestInterval:10,
 			rebootStartTime:jstRebootStatTime,
@@ -722,6 +722,21 @@ gekiRouter.post("/GetUserTradeItemApi", async (req:Request, res) => {
 		userId:req.body.userId,
 		length:userTradeItems.length,
 		userTradeItemList:userTradeItems
+	});
+});
+
+gekiRouter.post("/GetUserEventMapApi", async (req:Request, res) => {
+	if (!req.body.userId) return res.json({});
+
+	const eventId = req.body.eventId;
+	const mapId = req.body.mapId;
+
+	const userEventMaps = await GekiUserEventMap.find({userId: req.body.userId, eventId, mapId}).lean();
+
+	res.json({
+		userId:req.body.userId,
+		length:userEventMaps.length,
+		userEventMapList:userEventMaps
 	});
 });
 
