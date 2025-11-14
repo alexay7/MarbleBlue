@@ -9,19 +9,17 @@
 
 # 中
 - [~] Sistema de recomendaciones por recientes (FALTA HACER UN ALGORITMO PARA RECOMENDAR CANCIONES)
-- [~] Soporte para recomendaciones por rating
 - [ ] Cron para reiniciar equipos mensualmente
 - [ ] Soporte para personajes favoritos
 
 # 撃
-- [ ] Soporte para modo aventura
+NO HAY TAREAS PENDIENTES
 
 # 舞
+NO HAY TAREAS PENDIENTES
 
 # 札
-- [x] Conexión con 中
-- [x] Conexión con 撃
-- [x] Conexión con 舞
+NO HAY TAREAS PENDIENTES
 
 # 〇 (por determinar)
 
