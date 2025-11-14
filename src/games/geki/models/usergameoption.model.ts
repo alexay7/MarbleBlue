@@ -6,6 +6,7 @@ const gekiUserGameOptionSchema = new Schema<GekiUserGameOptionType>({
 
 	userId: {type: String, ref: "Card", required: true, unique:true},
 
+	optionSet: {type:Number, default:0},
 	speed: {type: Number, default: 0},
 	mirror: {type: Number, default: 0},
 	judgeTiming: {type: Number, default: 0},

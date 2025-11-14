@@ -731,12 +731,16 @@ gekiRouter.post("/GetUserEventMapApi", async (req:Request, res) => {
 	const eventId = req.body.eventId;
 	const mapId = req.body.mapId;
 
-	const userEventMaps = await GekiUserEventMap.find({userId: req.body.userId, eventId, mapId}).lean();
+	const userEventMap = await GekiUserEventMap.findOne({userId: req.body.userId, eventId, mapId}).lean();
+
+	if (!userEventMap) return res.json({
+		userId:req.body.userId,
+		userEventMap: null
+	});
 
 	res.json({
 		userId:req.body.userId,
-		length:userEventMaps.length,
-		userEventMapList:userEventMaps
+		userEventMap
 	});
 });
 
@@ -1175,19 +1179,11 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 		await GekiUserKop.bulkWrite(bulkOps);
 	}
 
-	if(body.upsertUserAll.userEventMap && body.upsertUserAll.userEventMap.length>0) {
-		const bulkOps = body.upsertUserAll.userEventMap.map(eventMap => {
-			eventMap.userId = body.userId;
-			return {
-				updateOne: {
-					filter: { userId: body.userId, eventId: eventMap.eventId, mapId: eventMap.mapId },
-					update: { $set: eventMap },
-					upsert: true
-				}
-			};
-		});
+	if(body.upsertUserAll.userEventMap) {
+		const eventMap = body.upsertUserAll.userEventMap;
+		eventMap.userId = body.userId;
 
-		await GekiUserEventMap.bulkWrite(bulkOps);
+		await GekiUserEventMap.findOneAndReplace({userId: body.userId, eventId: eventMap.eventId, mapId: eventMap.mapId}, eventMap, {upsert: true});
 	}
 
 	if(body.upsertUserAll.userRatinglogList && body.upsertUserAll.userRatinglogList.length>0) {

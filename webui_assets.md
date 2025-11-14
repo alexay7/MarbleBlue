@@ -17,5 +17,5 @@
 8. Download UI_StarTicket files and add to public/geki/starticket/ as webp files
 
 # Useful commands
-find . -type f -iname "*.dds" -exec sh -c 'magick "$1" -quality 100 "${1%.dds}.webp"' _ {} \;
-find . -type f -iname "*.dds" -delete
+`find . -type f -iname "*.dds" -exec sh -c 'magick "$1" -quality 100 "${1%.dds}.webp"' _ {} \;`<br>
+`find . -type f -iname "*.dds" -delete`

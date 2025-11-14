@@ -141,7 +141,7 @@ export type GekiUpsertUserAllRequest = {
     userEventMusicList:GekiUserEventMusicType[];
     userTechEventList:GekiUserTechEventType[];
     userKopList:GekiUserKopType[];
-    userEventMap:GekiUserEventMapType[];
+    userEventMap:GekiUserEventMapType|null;
     userRatinglogList:GekiUserRatingLogType[];
 
     // Irrelevant
