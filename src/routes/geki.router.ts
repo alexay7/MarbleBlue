@@ -1062,7 +1062,7 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 			item.userId = body.userId;
 			return {
 				updateOne: {
-					filter: { userId: body.userId, musicItemId: item.musicId },
+					filter: { userId: body.userId, musicId: item.musicId },
 					update: { $set: item },
 					upsert: true
 				}
