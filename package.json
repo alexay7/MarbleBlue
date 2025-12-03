@@ -4,14 +4,14 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
+    "@eslint/js": "^9.39.1",
     "@types/bun": "latest",
-    "eslint": "^9.35.0",
-    "globals": "^16.4.0",
-    "typescript-eslint": "^8.44.0"
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "typescript-eslint": "^8.48.1"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.2"
   },
   "scripts": {
     "dev": "nodemon src/main.ts",
@@ -20,27 +20,27 @@
   },
   "dependencies": {
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.3",
+    "@types/express": "^5.0.6",
     "@types/express-session": "^1.18.2",
     "@types/passport": "^1.0.17",
     "@types/passport-jwt": "^4.0.1",
-    "axios": "^1.12.1",
-    "body-parser": "^2.2.0",
+    "axios": "^1.13.2",
+    "body-parser": "^2.2.1",
     "chalk": "^5.6.2",
     "cors": "^2.8.5",
-    "dayjs": "^1.11.18",
-    "dotenv": "^17.2.2",
-    "express": "^5.1.0",
+    "dayjs": "^1.11.19",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
     "express-session": "^1.18.2",
     "express-ts-handler": "^0.0.2",
-    "http-errors": "^2.0.0",
-    "jiti": "^2.5.1",
-    "mongoose": "^8.18.1",
-    "nodemon": "^3.1.10",
+    "http-errors": "^2.0.1",
+    "jiti": "^2.6.1",
+    "mongoose": "^8.20.1",
+    "nodemon": "^3.1.11",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "wtf-8": "^1.0.1",
-    "zod": "^4.1.11",
+    "zod": "^4.1.13",
     "zod-express-middleware": "^1.4.0",
     "zod-validation-error": "^4.0.2"
   }
