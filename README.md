@@ -15,9 +15,9 @@ A server that listen requests and serves responses so that things work for certa
 - `DEFAULT_CHU3_MATCHING_REFLECTOR`: The public address of a matching server if you know of one (port 50201).
 - `SCORES_SERVER`: The public address of a well-known scores server without slash at the end.
 - `WEBUI_URL`: (optional) The public address where the web UI will be reachable from the internet or the local IP of the server if you do not plan on making the server public.
+- `BETTER_AUTH_URL`: (optional) The public address where the web UI will be reachable from the internet or the local IP of the server if you do not plan on making the server public.
+- `BETTER_AUTH_SECRET`: A random string used to sign session tokens, you can generate one using `openssl rand -base64 64`.
 - `TZ`: Leave it as is or you will be playing in the future if you do not live in Japan.
-- `SESSION_SECRET`: A random string used to sign session tokens, you can generate one using `openssl rand -base64 64`.
-- `DISCORD_CLIENT_ID` and `DISCORD_CLIENT_SECRET`: (optional) The client ID and secret of your Discord developer application if you created one in step 2.
 - `KEYCHIP_AUTH`: (optional) Set it to true if you want to enable KeyChip authentication, take into account that you will need to generate a keychip for yourself and add it to the `keychips` collection in the database for any game to work.
 5. Run `docker compose up -d` to start the server.
 6. Prepare the config file in your game so that it points to your server.

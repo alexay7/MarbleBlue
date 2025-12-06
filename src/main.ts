@@ -16,9 +16,6 @@ import {CHU3VERSIONS} from "./games/chu3/config.ts";
 import mai2Router from "./routes/mai2.router.ts";
 import mai2CMRouter from "./routes/mai2cm.router.ts";
 import apiRouter from "./routes/api.router.ts";
-import session from "express-session";
-import passport from "passport";
-import {Strategy as JwtStrategy} from "passport-jwt";
 import errorMiddleware from "./middleware/error.ts";
 import cors from "cors";
 import {toNodeHandler} from "better-auth/node";
@@ -110,33 +107,11 @@ app.use("/g/mai2/", json(), gameEndpointMiddleware, mai2Router);
 app.use("/g/cmmai2/:ver/", json(), gameEndpointMiddleware, mai2CMRouter);
 app.use("/g/card/", json(), gameEndpointMiddleware, cmRouter);
 
-// API
-// Passport
-passport.use(
-	new JwtStrategy({
-		jwtFromRequest: (req) => {
-			// Get from authorization header
-			if (req.headers.authorization) {
-				return req.headers.authorization.split(" ")[1];
-			}
-		},
-		secretOrKey: config.SESSION_SECRET,
-		passReqToCallback: true
-	},
-	(req, jwtPayload, done) => {
-		if (Date.now() > jwtPayload.exp * 1000) {
-			return done("Expired token", null);
-		}
-
-		return done(null, jwtPayload);
-	})
-);
-
 app.use(cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}));
 
 app.use("/api/auth/{*any}", toNodeHandler(auth));
 
-app.use("/api", json({limit:"10mb"}), session({secret: config.SESSION_SECRET, resave: false, saveUninitialized: false}), passport.initialize(), passport.session(), apiRouter, errorMiddleware);
+app.use("/api", json({limit:"10mb"}), apiRouter, errorMiddleware);
 
 app.use(function (_, __, next) {
 	log("error", `404: ${_.originalUrl}`);
