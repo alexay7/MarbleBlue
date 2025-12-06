@@ -1,6 +1,7 @@
 import type {Request, Response} from "express";
 import {Card} from "../games/common/models/card.model.ts";
 import {Types} from "mongoose";
+import {db} from "../modules/mongoose.ts";
 
 export const userService = {
 	getUserData: async ( req: Request, res: Response) => {
@@ -8,7 +9,7 @@ export const userService = {
 	},
 	getUserCards: async ( req: Request, res: Response) => {
 		const foundCards = await Card.aggregate()
-			.match({userId:new Types.ObjectId(req.currentUser!._id)})
+			.match({userId:new Types.ObjectId(req.currentUser!.id)})
 			.lookup({
 				from: "chu3userdatas",
 				localField: "extId",
@@ -53,8 +54,13 @@ export const userService = {
 			return res.status(400).json({message: "card-already-registered"});
 		}
 
-		const updatedCard = await Card.findByIdAndUpdate(foundCard._id, {userId: req.currentUser!._id}, {new: true});
+		const updatedCard = await Card.findByIdAndUpdate(foundCard._id, {userId: req.currentUser!.id}, {new: true});
 
 		return res.json(updatedCard);
+	},
+	verifyUser: async ( req: Request, res: Response) => {
+		await db.db?.collection("user")?.updateOne({_id:new Types.ObjectId(req.currentUser?.id)}, {$set:{emailVerified: true, updatedAt: new Date()}});
+
+		return res.json({message:"success"});
 	}
 };

@@ -1,7 +1,7 @@
 import express, {text, type RequestHandler, json} from "express";
 import createHttpError from "http-errors";
 import allNetRouter from "./routes/allnet.router.ts";
-import {log} from "./helpers/general.ts";
+import {log} from "./utils/general.ts";
 import {AimedbServlette} from "./modules/aimedb.ts";
 import chu3Router from "./routes/chu3.router.ts";
 import zlib from "node:zlib";
@@ -21,6 +21,8 @@ import passport from "passport";
 import {Strategy as JwtStrategy} from "passport-jwt";
 import errorMiddleware from "./middleware/error.ts";
 import cors from "cors";
+import {toNodeHandler} from "better-auth/node";
+import {auth} from "./utils/auth.ts";
 
 // JSON
 declare global {
@@ -130,7 +132,11 @@ passport.use(
 	})
 );
 
-app.use("/api", json({limit:"10mb"}), cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}), session({secret: config.SESSION_SECRET, resave: false, saveUninitialized: false}), passport.initialize(), passport.session(), apiRouter, errorMiddleware);
+app.use(cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}));
+
+app.use("/api/auth/{*any}", toNodeHandler(auth));
+
+app.use("/api", json({limit:"10mb"}), session({secret: config.SESSION_SECRET, resave: false, saveUninitialized: false}), passport.initialize(), passport.session(), apiRouter, errorMiddleware);
 
 app.use(function (_, __, next) {
 	log("error", `404: ${_.originalUrl}`);

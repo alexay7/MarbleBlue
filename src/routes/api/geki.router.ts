@@ -18,7 +18,7 @@ import {GekiGameCard} from "../../games/geki/models/gamecard.model.ts";
 import {GekiUserCharacter} from "../../games/geki/models/usercharacter.model.ts";
 import {GekiUserDeck} from "../../games/geki/models/userdeck.model.ts";
 import {GekiUserGameOption} from "../../games/geki/models/usergameoption.model.ts";
-import {customValidateRequest} from "../../helpers/zod.ts";
+import {customValidateRequest} from "../../utils/zod.ts";
 import {UpdateGekiUserDataDto, UpdateGekiUserOptionsDto, UpdateGekiUserRivalsDto} from "../../dto/geki.dto.ts";
 import {GekiGameLoginBonus} from "../../games/geki/models/gameloginbonus.model.ts";
 import {GekiUserLoginBonus} from "../../games/geki/models/userloginbonus.model.ts";

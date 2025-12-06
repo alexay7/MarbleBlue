@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import {config} from "../config/config.ts";
-import {log} from "../helpers/general.ts";
+import {log} from "../utils/general.ts";
 
 export default function connectDB() {
 	const url = config.MONGO_URI as string;

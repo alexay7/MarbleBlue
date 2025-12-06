@@ -1,6 +1,6 @@
 import {Router} from "express";
-import {decodeAllNet, toUrl} from "../helpers/allnet.ts";
-import {log} from "../helpers/general.ts";
+import {decodeAllNet, toUrl} from "../utils/allnet.ts";
+import {log} from "../utils/general.ts";
 import {config} from "../config/config.ts";
 import {Keychip} from "../games/common/models/keychip.model.ts";
 

@@ -1,12 +1,10 @@
 import { Request } from "express";
-import {Types} from "mongoose";
+import {User as BAUser} from "better-auth";
 
 declare global {
     namespace Express {
         export interface Request {
-            currentUser?:{
-                _id:Types.ObjectId;
-            },
+            currentUser?:BAUser,
             cardId?:string
         }
     }

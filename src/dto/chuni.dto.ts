@@ -95,4 +95,4 @@ export const importChu3MusicDto = z.object({
 	isLock: z.boolean(),
 	theoryCount: z.number().min(0),
 	ext1: z.number().min(0),
-})
+});

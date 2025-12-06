@@ -7,7 +7,7 @@ import {Chu3UserMisc} from "../../games/chu3/models/usermisc.model.ts";
 import {Chu3GameMusic} from "../../games/chu3/models/gamemusic.model.ts";
 import {Chu3GameCharacter} from "../../games/chu3/models/gamecharacter.model.ts";
 import {Chu3UserGameOption} from "../../games/chu3/models/usergameoption.model.ts";
-import {customValidateRequest} from "../../helpers/zod.ts";
+import {customValidateRequest} from "../../utils/zod.ts";
 import {
 	importChu3MusicDto,
 	UpdateChu3TeamDto,
@@ -251,7 +251,7 @@ chuniApiRouter.get("/ranking", async (req: Request, res) => {
 	const topPlayers = await Chu3UserData.find({version:18})
 		.sort({playerRating: -1})
 		.limit(25)
-		.select({userName:1,playerRating:1});
+		.select({userName:1, playerRating:1});
 
 	res.json(topPlayers);
 });
@@ -387,7 +387,7 @@ chuniApiRouter.post("/team/create",
 			return res.status(400).json({message: "A team with that name already exists"});
 		}
 
-		const existingTeamWithOwner = await Chu3Team.findOne({ownerId: req.currentUser?._id});
+		const existingTeamWithOwner = await Chu3Team.findOne({ownerId: req.currentUser?.id});
 		if (existingTeamWithOwner) {
 			return res.status(400).json({message: "You already own a team"});
 		}
@@ -398,7 +398,7 @@ chuniApiRouter.post("/team/create",
 		const newTeam = await Chu3Team.create({
 			teamId: nextTeamId,
 			teamName:req.body.teamName,
-			ownerId: req.currentUser?._id
+			ownerId: req.currentUser?.id
 		});
 
 		const newMembership = await Chu3UserTeam.create({
@@ -422,7 +422,7 @@ chuniApiRouter.post("/team/leave", async (req: Request, res) => {
 		return res.status(400).json({message: "Your team no longer exists, you have been removed from it"});
 	}
 
-	if (team.ownerId.toString() === req.currentUser?._id.toString()) {
+	if (team.ownerId.toString() === req.currentUser?.id.toString()) {
 		return res.status(400).json({message: "You are the owner of the team, you cannot leave. You can delete the team if you want to disband it."});
 	}
 
@@ -444,7 +444,7 @@ chuniApiRouter.post("/team/disband", async (req: Request, res) => {
 		return res.status(400).json({message: "Your team no longer exists, you have been removed from it"});
 	}
 
-	if (team.ownerId.toString() !== req.currentUser?._id.toString()) {
+	if (team.ownerId.toString() !== req.currentUser?.id.toString()) {
 		return res.status(400).json({message: "You are not the owner of the team, only the owner can disband the team"});
 	}
 
@@ -521,13 +521,13 @@ chuniApiRouter.post("/shop/purchase/:articleId",
 
 		// Deduct points
 		if (shopItem.currencyType==="points"){
-			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {ppoint: -shopItem.price}})
+			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {ppoint: -shopItem.price}});
 		} else {
 			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {point: -shopItem.price}});
 		}
 
 		res.json({message: "success"});
-	})
+	});
 
 chuniApiRouter.post("/music/import",
 	customValidateRequest({
@@ -559,7 +559,7 @@ chuniApiRouter.post("/music/import",
 								}
 							}
 						}
-					})
+					});
 				}
 
 				// 	Update all justice if true
@@ -574,7 +574,7 @@ chuniApiRouter.post("/music/import",
 								}
 							}
 						}
-					})
+					});
 				}
 
 				// 	Update full combo if true
@@ -588,7 +588,7 @@ chuniApiRouter.post("/music/import",
 								}
 							}
 						}
-					})
+					});
 				}
 
 				// 	Update max combo if higher
@@ -602,7 +602,7 @@ chuniApiRouter.post("/music/import",
 								}
 							}
 						}
-					})
+					});
 				}
 			} else {
 				// Insert new entry
@@ -622,6 +622,6 @@ chuniApiRouter.post("/music/import",
 		}
 
 		res.json({message: "Import complete", updated: bulkOps.length});
-	})
+	});
 
 export default chuniApiRouter;

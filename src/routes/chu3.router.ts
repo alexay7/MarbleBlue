@@ -13,10 +13,10 @@ import {Chu3UserActivity} from "../games/chu3/models/useractivity.model.ts";
 import {Chu3UserMisc} from "../games/chu3/models/usermisc.model.ts";
 import {Chu3UserPlaylog} from "../games/chu3/models/userplaylog.model.ts";
 import {Chu3UserTeam} from "../games/chu3/models/userteam.model.ts";
-import {calculateTeamEmblem, chu3ToUtf8} from "../helpers/chu3.ts";
+import {calculateTeamEmblem, chu3ToUtf8} from "../utils/chu3.ts";
 import type {Chu3TeamType, Chu3UserTeamType} from "../games/chu3/types/team.types.ts";
 import {Chu3UserMapArea} from "../games/chu3/models/usermaparea.model.ts";
-import {log} from "../helpers/general.ts";
+import {log} from "../utils/general.ts";
 import {Chu3UserCmission, Chu3UserCmissionProgress} from "../games/chu3/models/usercmission.model.ts";
 import {Chu3UserCourse} from "../games/chu3/models/usercourse.model.ts";
 import {Chu3UserRegion} from "../games/chu3/models/userregion.model.ts";
@@ -24,7 +24,7 @@ import {config} from "../config/config.ts";
 import {Chu3GameUC} from "../games/chu3/models/gameUC.model.ts";
 import {Chu3UserUC} from "../games/chu3/models/useruc.model.ts";
 import type {Chu3UserMusicFavoriteType} from "../games/chu3/types/usermisc.types.ts";
-import {getChuniPBs} from "../helpers/kt.ts";
+import {getChuniPBs} from "../utils/kt.ts";
 import {Chu3UserNetBattleData, Chu3UserNetBattleLog} from "../games/chu3/models/usernetbattle.model.ts";
 import {Chu3GameEvent} from "../games/chu3/models/gameevent.model.ts";
 import {Chu3GameLoginBonus} from "../games/chu3/models/gameloginbonus.model.ts";
@@ -650,7 +650,7 @@ chu3Router.post("/ChuniServlet/GetUserFavoriteItemApi", async (req: Request, res
 		break;
 	}
 	case 2: {
-		list = userMisc.rivalList
+		list = userMisc.rivalList;
 		break;
 	}
 	case 3: {
@@ -731,25 +731,50 @@ chu3Router.post("/ChuniServlet/GetUserTeamApi", async (req: Request, res) => {
 chu3Router.post("/ChuniServlet/GetTeamCourseSettingApi", (req: Request, res) => {
 	// TODO
 	res.json({
-		userId: req.body.userId,
-		length: 0,
-		nextIndex: -1,
-		teamCourseSettingList: [],
+		"userId": req.body.userId,
+		"length": 1,
+		"nextIndex": -1,
+		"teamCourseSettingList": [
+			{
+				"orderId": 1,
+				"courseId": 20000,
+				"classId": 4,
+				"ruleId": 0,
+				"courseName": "チーム用コース",
+				"teamCourseMusicList": [
+					{"track":0, "musicId": 385, "type": 0, "level": 2, "selectLevel": -1},
+					{"track":1, "musicId": 376, "type": 0, "level": 2, "selectLevel": -1},
+					{"track":2, "musicId": 411, "type": 0, "level": 2, "selectLevel": -1}
+				],
+				"teamCourseRankingInfoList": [],
+				"recodeDate": "2099-12-31 11:59:99.0",
+				"isPlayed": false
+			}
+		],
 	});
 });
 
 chu3Router.post("/ChuniServlet/GetTeamCourseRuleApi", (req: Request, res) => {
 	// TODO
 	res.json({
-		userId: req.body.userId,
-		length: 0,
-		nextIndex: -1,
-		teamCourseRuleList: [],
+		"userId": req.body.userId,
+		"length": 1,
+		"nextIndex": -1,
+		"teamCourseRuleList": [
+			{
+				"recoveryLife": 0,
+				"clearLife": 100,
+				"damageMiss": 1,
+				"damageAttack": 1,
+				"damageJustice": 0,
+				"damageJusticeC": 0
+			}
+		],
 	});
 });
 
 chu3Router.post("/ChuniServlet/GetUserLoginBonusApi", async (req: Request, res) => {
-	const userLoginBonuses = await Chu3UserLoginBonus.find({cardId: req.body.userId, hasReceivedToday: true}, {
+	const userLoginBonuses = await Chu3UserLoginBonus.find({cardId: req.body.userId, isFinished: false}, {
 		_id: 0,
 		__v: 0
 	}).lean();
@@ -999,7 +1024,7 @@ chu3Router.post("/ChuniServlet/GetUserRivalMusicApi", async (req: Request, res) 
 
 	if (!foundRival) return res.json({});
 
-	console.log(foundRival)
+	console.log(foundRival);
 
 	const rivalPBs = await getChuniPBs(foundRival);
 

@@ -16,9 +16,9 @@ services:
       - WEBUI_URL=
       - TZ=Asia/Tokyo
       - SESSION_SECRET=
-      - DISCORD_CLIENT_ID=
-      - DISCORD_CLIENT_SECRET=
       - KEYCHIP_AUTH=false
+      - BETTER_AUTH_SECRET=
+      - BETTER_AUTH_URL=
     depends_on:
       - db
   db:

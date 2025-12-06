@@ -1,24 +1,26 @@
 import type {NextFunction, Request, Response} from "express";
-import passport from "passport";
 import createHttpError from "http-errors";
 import {config} from "../config/config.ts";
-import {Types} from "mongoose";
+import {fromNodeHeaders} from "better-auth/node";
+import {auth} from "../utils/auth.ts";
 
-export function protectedRoute(req: Request, res: Response, next: NextFunction) {
-	passport.authenticate("jwt", {session: false}, function (err: unknown, user: { _id: Types.ObjectId }) {
-		if (err) return next(createHttpError(401, err));
-		if (!user) return next(createHttpError(401, "Unauthorized"));
+export async function protectedRoute(req: Request, res: Response, next: NextFunction) {
+	const session = await auth.api.getSession({
+		headers: fromNodeHeaders(req.headers),
+	});
 
-		// Attach user to request object
-		req.currentUser = user;
+	if (!session || !session.user) {
+		return next(createHttpError(401, "Unauthorized"));
+	}
 
-		next();
-	})(req, res, next);
+	req.currentUser = session.user;
+
+	return next();
 }
 
 export function adminRoute(req: Request, res: Response, next: NextFunction) {
 	return protectedRoute(req, res, () => {
-		if (!req.currentUser || req.currentUser._id.toString() !== config.ADMIN_ID) {
+		if (!req.currentUser || req.currentUser.id.toString() !== config.ADMIN_ID) {
 			return next(createHttpError(401, "Unauthorized"));
 		}
 

@@ -3,10 +3,10 @@
 import * as crypto from "crypto";
 import * as net from "net";
 import * as util from "util";
-import {log} from "../helpers/general.ts";
+import {log} from "../utils/general.ts";
 import {ADBBaseResponse, ADBHeader} from "./adb/base.ts";
 import {ADBLookupRequest} from "./adb/lookup.ts";
-import {generateExternalId} from "../helpers/aime.ts";
+import {generateExternalId} from "../utils/aime.ts";
 import {Card} from "../games/common/models/card.model.ts";
 import type {CardType} from "../games/common/types/card.types.ts";
 

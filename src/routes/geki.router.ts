@@ -3,7 +3,7 @@ import utc from "dayjs/plugin/utc.js";
 import timezone from "dayjs/plugin/timezone.js";
 import {Router, type Request, type RequestHandler} from "express";
 import type {GekiUpsertUserAllRequest} from "../games/geki/types/userdata.types.ts";
-import {log} from "../helpers/general.ts";
+import {log} from "../utils/general.ts";
 import {GekiUserData} from "../games/geki/models/userdata.model.ts";
 import {GekiUserGameOption} from "../games/geki/models/usergameoption.model.ts";
 import {GekiUserCharacter} from "../games/geki/models/usercharacter.model.ts";
@@ -32,7 +32,7 @@ import {GekiUserEventMap} from "../games/geki/models/usereventmap.model.ts";
 import {GekiUserRatingLog} from "../games/geki/models/userratinglog.model.ts";
 import {GekiUserRegion} from "../games/geki/models/userregion.model.ts";
 import {GekiGameEvent} from "../games/geki/models/gameevent.model.ts";
-import {getGekiPBs} from "../helpers/kt.ts";
+import {getGekiPBs} from "../utils/kt.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -41,7 +41,7 @@ dayjs.extend(timezone);
 const gekiRouter = Router({mergeParams:true});
 
 gekiRouter.post("/GetGameSettingApi", (req:Request, res) => {
-	let version = req.params.ver || "1.00";
+	const version = req.params.ver || "1.00";
 
 	const now = dayjs().tz("Asia/Tokyo");
 
