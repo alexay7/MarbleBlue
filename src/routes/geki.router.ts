@@ -454,8 +454,8 @@ gekiRouter.post("/GetUserCardApi", async (req:Request, res) => {
 		nextIndex:-1,
 		userCardList: userCards.map(card => ({
 			...card,
-			kaikaDate: card.kaikaDate ? dayjs(card.kaikaDate).format("YYYY-MM-DD HH:mm:ss.0") : undefined,
-			choKaikaDate: card.choKaikaDate ? dayjs(card.choKaikaDate).format("YYYY-MM-DD HH:mm:ss.0") : undefined,
+			kaikaDate: card.kaikaDate ? dayjs(card.kaikaDate).format("YYYY-MM-DD HH:mm:ss.0") : "0000-00-00 00:00:00.0",
+			choKaikaDate: card.choKaikaDate ? dayjs(card.choKaikaDate).format("YYYY-MM-DD HH:mm:ss.0") : "0000-00-00 00:00:00.0",
 			created: dayjs(card.created).format("YYYY-MM-DD HH:mm:ss.0"),
 		}))
 	});
@@ -900,8 +900,8 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	if (body.upsertUserAll.userCardList && body.upsertUserAll.userCardList.length>0) {
 		const bulkOps = body.upsertUserAll.userCardList.map(card => {
 			card.userId = body.userId;
-			card.kaikaDate = card.kaikaDate ? dayjs(card.kaikaDate).toDate() : undefined;
-			card.choKaikaDate = card.choKaikaDate ? dayjs(card.choKaikaDate).toDate() : undefined;
+			card.kaikaDate = dayjs(card.kaikaDate).toDate().getTime()>1 ? dayjs(card.kaikaDate).toDate() : undefined;
+			card.choKaikaDate = dayjs(card.choKaikaDate).toDate().getTime()>1 ? dayjs(card.choKaikaDate).toDate() : undefined;
 			card.created = dayjs(card.created).toDate();
 			return {
 				updateOne: {
