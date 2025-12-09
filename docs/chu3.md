@@ -60,3 +60,6 @@ Los tipos de objetos se clasifican en el juego de la siguiente forma:
 - 9: Voz del sistema
 - 10: Símbolo de chat
 - 11: Accesorio de avatar
+
+# Team Courses
+Por motivos que desconozco, el id del curso definido para el equipo debe ser superior o igual a 200240 y el ruleId superior o igual a 1000, si no se cumplen estos requisitos el curso no aparecerá en el juego.

@@ -735,15 +735,14 @@ chu3Router.post("/ChuniServlet/GetTeamCourseSettingApi", (req: Request, res) => 
 		"nextIndex": -1,
 		"teamCourseSettingList": [
 			{
-				"orderId": 1,
-				"courseId": 20000,
+				"courseId": 200240,
 				"classId": 4,
-				"ruleId": 0,
+				"ruleId": 1000,
 				"courseName": "チーム用コース",
 				"teamCourseMusicList": [
-					{"track":0, "musicId": 385, "type": 0, "level": 2, "selectLevel": -1},
-					{"track":1, "musicId": 376, "type": 0, "level": 2, "selectLevel": -1},
-					{"track":2, "musicId": 411, "type": 0, "level": 2, "selectLevel": -1}
+					{"musicId": 385, "type": 0, "level": 2},
+					{"musicId": 376, "type": 0, "level": 2},
+					{"musicId": 411, "type": 0, "level": 2}
 				],
 				"teamCourseRankingInfoList": [],
 				"recodeDate": "2099-12-31 11:59:99.0",
@@ -761,8 +760,9 @@ chu3Router.post("/ChuniServlet/GetTeamCourseRuleApi", (req: Request, res) => {
 		"nextIndex": -1,
 		"teamCourseRuleList": [
 			{
+				"ruleId": 1000,
 				"recoveryLife": 0,
-				"clearLife": 100,
+				"life": 100,
 				"damageMiss": 1,
 				"damageAttack": 1,
 				"damageJustice": 0,
