@@ -191,7 +191,7 @@ chu3Router.post("/ChuniServlet/GameLoginApi", async (req: Request, res) => {
 
 		if (lastUpdate.isAfter(now.startOf("day"))) continue;
 
-		const presetBonuses = await Chu3GameLoginBonus.find({presetId: bonus.presetId}).lean();
+		const presetBonuses = await Chu3GameLoginBonus.find({presetId: bonus.presetId}, {needLoginDayCount:-1}).lean();
 
 		if (!presetBonuses.length) continue;
 
@@ -218,7 +218,6 @@ chu3Router.post("/ChuniServlet/GameLoginApi", async (req: Request, res) => {
 					isWatched: false,
 					isFinished: isFinished,
 					bonusCount: bonusDays,
-					hasReceivedToday: !!todayBonus
 				}
 			}
 			, {upsert: true});
