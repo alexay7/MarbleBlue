@@ -19,7 +19,10 @@ userRouter.post("/cards",
 );
 
 userRouter.post("/verify",
-	userService.verifyUser
+	async (req, res)=> {
+		await userService.verifyUser(req.currentUser!.id);
+		res.json({message:"success"});
+	}
 );
 
 export default userRouter;

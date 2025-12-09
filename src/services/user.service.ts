@@ -58,9 +58,7 @@ export const userService = {
 
 		return res.json(updatedCard);
 	},
-	verifyUser: async ( req: Request, res: Response) => {
-		await db.db?.collection("user")?.updateOne({_id:new Types.ObjectId(req.currentUser?.id)}, {$set:{emailVerified: true, updatedAt: new Date()}});
-
-		return res.json({message:"success"});
+	verifyUser: async ( userId: string) => {
+		await db.db?.collection("user")?.updateOne({_id:new Types.ObjectId(userId)}, {$set:{emailVerified: true, updatedAt: new Date()}});
 	}
 };
