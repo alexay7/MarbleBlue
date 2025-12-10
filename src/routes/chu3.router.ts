@@ -191,7 +191,7 @@ chu3Router.post("/ChuniServlet/GameLoginApi", async (req: Request, res) => {
 
 		if (lastUpdate.isAfter(now.startOf("day"))) continue;
 
-		const presetBonuses = await Chu3GameLoginBonus.find({presetId: bonus.presetId}, {needLoginDayCount:-1}).lean();
+		const presetBonuses = await Chu3GameLoginBonus.find({presetId: bonus.presetId}).sort({needLoginDayCount:-1}).lean();
 
 		if (!presetBonuses.length) continue;
 
@@ -223,6 +223,8 @@ chu3Router.post("/ChuniServlet/GameLoginApi", async (req: Request, res) => {
 			, {upsert: true});
 
 		if (!todayBonus) continue;
+
+		console.log(todayBonus);
 
 		// Add item to user inventory
 		await Chu3UserItem.findOneAndUpdate(

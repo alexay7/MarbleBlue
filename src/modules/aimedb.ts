@@ -181,8 +181,6 @@ class AimedbServlette {
 
 		response.writeUInt16LE(0x0c,0x04)
 		response.writeUInt16LE(1,0x08)
-		response.writeUInt16LE(0x6f,0x20)
-		response.writeUInt16LE(1,0x24)
 
 		return response;
 	}
