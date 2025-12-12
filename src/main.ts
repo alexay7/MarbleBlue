@@ -56,7 +56,7 @@ const gameEndpointMiddleware:RequestHandler = async (req, res, next) => {
 
 	let sent = false;
 
-	if (!relevantUrl.includes("Upsert")&&!relevantUrl.includes("GameLogin")) {
+	if (!relevantUrl.includes("Upsert")&&!relevantUrl.includes("GameLogin")&&!relevantUrl.includes("GetGameSettingApi")) {
 		const identifier = JSON.stringify(req.body);
 		const cacheKey = `cache:${game}:${ver}:${relevantUrl}:${identifier}`;
 
@@ -84,7 +84,7 @@ const gameEndpointMiddleware:RequestHandler = async (req, res, next) => {
 		log("game", `<<< ${body}`);
 		const identifier = JSON.stringify(req.body);
 
-		if (!relevantUrl.includes("Upsert")&&!relevantUrl.includes("GameLogin")) {
+		if (!relevantUrl.includes("Upsert")&&!relevantUrl.includes("GameLogin")&&!relevantUrl.includes("GetGameSettingApi")) {
 			const cacheKey = `cache:${game}:${ver}:${relevantUrl}:${identifier}`;
 
 			redisClient.setEx(cacheKey, 86400, Buffer.isBuffer(body) ? body.toString("base64") : Buffer.from(typeof body === "string" ? body : JSON.stringify(body)).toString("base64"))
