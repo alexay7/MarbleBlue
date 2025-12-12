@@ -1,6 +1,6 @@
 import chalk from "chalk";
 
-export const log = (color:"error"|"allnet"|"default"|"aime"|"aimePath"|"billing"|"game"|"gamePath"|"mongo", ...args: unknown[]
+export const log = (color:"error"|"allnet"|"default"|"aime"|"aimePath"|"billing"|"game"|"gamePath"|"mongo"|"redis", ...args: unknown[]
 ) => {
 	switch (color){
 	case "error":
@@ -29,6 +29,9 @@ export const log = (color:"error"|"allnet"|"default"|"aime"|"aimePath"|"billing"
 		break;
 	case "mongo":
 		console.log(chalk.green("[MongoDB] ->", args));
+		break;
+	case "redis":
+		console.log(chalk.blue("[Redis] ->", args));
 		break;
 	default:
 		console.log(args);

@@ -4,6 +4,8 @@
 3. Download character files 01 and 02 and add to public/chuni/char/ as webp files
 4. Download stage files and add to public/chuni/stage/ as webp files
 5. Download music files and add to public/chuni/jacket/ as webp files
+5. Download nameplates files and add to public/chuni/plate/ as webp files
+5. Download mapicons files and add to public/chuni/mapicon/ as webp files
 
 # Geki
 1. Run gekiexporter and add import the jsons manually to each mongodb collection.

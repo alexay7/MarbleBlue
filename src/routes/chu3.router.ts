@@ -33,6 +33,7 @@ import {Chu3GameMapConditions} from "../games/chu3/models/gamemapconditions.mode
 import {CHU3VERSIONS} from "../games/chu3/config.ts";
 import {Chu3GameCharge} from "../games/chu3/models/gamecharge.model.ts";
 import {Chu3UserLV} from "../games/chu3/models/userLV.model.ts";
+import {deleteRedisKey} from "../modules/redis.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -281,19 +282,82 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionOpenApi", (_: Request, res) => 
 	// LINKED VERSE
 	const response = {
 		"length": 1,
-		"gameLinkedVerseConditionOpenList": [{
-			linkedVerseId: 10001,
-			length: 1,
-			conditionList: [{
+		"gameLinkedVerseConditionOpenList": [
+			{
+				linkedVerseId: 10001,
+				length: 1,
+				conditionList: [{
 
-				type: 3,
-				conditionId:0,
-				logicalOpe: 1,
-				startDate: "2019-01-01 00:00:00",
-				endDate: "2099-11-01 00:00:00",
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			},
+			{
+				linkedVerseId: 10002,
+				length: 1,
+				conditionList: [{
+
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10003,
+				length: 1,
+				conditionList: [{
+
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10004,
+				length: 1,
+				conditionList: [{
+
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10005,
+				length: 1,
+				conditionList: [{
+
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10006,
+				length: 1,
+				conditionList: [{
+
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
 			}
-			]
-		}]
+		]
 	};
 
 	res.json(response);
@@ -302,20 +366,77 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionOpenApi", (_: Request, res) => 
 chu3Router.post("/ChuniServlet/GetGameLVConditionUnlockApi", (_: Request, res) => {
 	// LINKED VERSE
 	const response = {
-		"length": 1,
-		"gameLinkedVerseConditionUnlockList": [{
-			linkedVerseId: 10001,
-			length: 1,
-			conditionList: [{
-
-				type: 3,
-				conditionId:0,
-				logicalOpe: 1,
-				startDate: "2019-01-01 00:00:00",
-				endDate: "2099-11-01 00:00:00",
+		"length": 5,
+		"gameLinkedVerseConditionUnlockList": [
+			{
+				linkedVerseId: 10001,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			},
+			{
+				linkedVerseId: 10002,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10003,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10004,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10005,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10006,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
 			}
-			]
-		}]
+		]
 	};
 
 	res.json(response);
@@ -1052,6 +1173,12 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userData && body.upsertUserAll.userData.length > 0) {
+		// clear userdata cache
+		deleteRedisKey("GetUserDataApi", body.userId);
+		deleteRedisKey("CMGetUserDataApi", body.userId);
+		deleteRedisKey("GetUserPreviewApi", body.userId);
+		deleteRedisKey("CMGetUserPreviewApi", body.userId);
+
 		const newUserData = body.upsertUserAll.userData[0]!;
 
 		newUserData.cardId = body.userId;
@@ -1066,12 +1193,19 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	if (body.upsertUserAll.userGameOption && body.upsertUserAll.userGameOption.length > 0) {
 		const newUserGameOption = body.upsertUserAll.userGameOption[0]!;
 
+		// clear gameoption cache
+		deleteRedisKey("GetUserOptionApi", body.userId);
+
 		newUserGameOption.cardId = body.userId;
 
 		await Chu3UserGameOption.findOneAndReplace({cardId: body.userId}, newUserGameOption, {upsert: true});
 	}
 
 	if (body.upsertUserAll.userCharacterList && body.upsertUserAll.userCharacterList.length > 0) {
+		// clear userchars cache
+		deleteRedisKey("GetUserCharacterApi", body.userId);
+		deleteRedisKey("CMGetUserCharacterApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userCharacterList.map(char => {
 			char.cardId = body.userId;
 			return {
@@ -1087,6 +1221,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if( body.upsertUserAll.userLoginBonusList && body.upsertUserAll.userLoginBonusList.length > 0) {
+
+		// clear userloginbonus cache
+		deleteRedisKey("GetUserLoginBonusApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userLoginBonusList.map(bonus => {
 			bonus.cardId = body.userId;
 			bonus.lastUpdateDate = dayjs(bonus.lastUpdateDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1104,6 +1242,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userItemList && body.upsertUserAll.userItemList.length > 0) {
+		// clear useritems cache
+		deleteRedisKey("GetUserItemApi", body.userId);
+		deleteRedisKey("CMGetUserItemApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userItemList.map(item => {
 			item.cardId = body.userId;
 			return {
@@ -1119,6 +1261,9 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userMusicDetailList && body.upsertUserAll.userMusicDetailList.length > 0) {
+		// clear musicdetails cache
+		deleteRedisKey("GetUserMusicApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userMusicDetailList.map(music => {
 			music.cardId = body.userId;
 			return {
@@ -1134,6 +1279,9 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userActivityList && body.upsertUserAll.userActivityList.length > 0) {
+		// clear activity cache
+		deleteRedisKey("GetUserActivityApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userActivityList.map(activity => {
 			activity.cardId = body.userId;
 			return {
@@ -1178,6 +1326,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userTeamPoint && body.upsertUserAll.userTeamPoint.length > 0) {
+
+		// clear userteam cache
+		deleteRedisKey("GetUserTeamApi", body.userId);
+
 		const newUserTeam = body.upsertUserAll.userTeamPoint[0]!;
 
 		await Chu3UserTeam.findOneAndUpdate({cardId: body.userId, teamId: newUserTeam.teamId}, {
@@ -1186,6 +1338,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userMapAreaList && body.upsertUserAll.userMapAreaList.length > 0) {
+
+		// clear maparea cache
+		deleteRedisKey("GetUserMapAreaApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userMapAreaList.map(area => {
 			area.cardId = body.userId;
 			return {
@@ -1201,6 +1357,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userCMissionList && body.upsertUserAll.userCMissionList.length > 0) {
+
+		// clear usermissions cache
+		deleteRedisKey("GetUserCMissionListApi", body.userId);
+
 		// First process the missions
 		const bulkOps = body.upsertUserAll.userCMissionList.map(mission => {
 			mission.cardId = body.userId;
@@ -1233,6 +1393,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userCourseList && body.upsertUserAll.userCourseList.length > 0) {
+
+		// clear usercourses cache
+		deleteRedisKey("GetUserCourseApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userCourseList.map(course => {
 			course.cardId = body.userId;
 			course.lastPlayDate = dayjs(course.lastPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1249,6 +1413,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userUnlockChallengeList && body.upsertUserAll.userUnlockChallengeList.length > 0) {
+
+		// clear UC cache
+		deleteRedisKey("GetUserUCApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userUnlockChallengeList.map(uc => {
 			uc.cardId = body.userId;
 			uc.clearDate = dayjs(uc.clearDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1265,6 +1433,10 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if(body.upsertUserAll.userLinkedVerseList && body.upsertUserAll.userLinkedVerseList.length > 0) {
+
+		// clear LV cache
+		deleteRedisKey("GetUserLVApi", body.userId);
+
 		const bulkOps = body.upsertUserAll.userLinkedVerseList.map(lv => {
 			lv.cardId = body.userId;
 			lv.clearDate = dayjs(lv.clearDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1302,6 +1474,9 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userNetBattleData && body.upsertUserAll.userNetBattleData.length > 0) {
+
+		deleteRedisKey("GetUserNetBattleDataApi", body.userId);
+
 		const newNetBattleData = body.upsertUserAll.userNetBattleData[0]!;
 
 		newNetBattleData.cardId = body.userId;

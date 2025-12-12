@@ -15,6 +15,6 @@ const chu3UserUCSchema = new Schema<Chu3UserUCType>({
 	clearDate: {type: Date, required: true, default: new Date(0)},
 });
 
-chu3UserUCSchema.index({cardId: 1, unlockChallengeId:1}, {unique: true});
+// chu3UserUCSchema.index({cardId: 1, unlockChallengeId:1}, {unique: true});
 
 export const Chu3UserUC = mongoose.model<Chu3UserUCType>("Chu3UserUC", chu3UserUCSchema);

@@ -35,6 +35,7 @@ import type {Chu3TeamType, Chu3UserTeamType} from "../../games/chu3/types/team.t
 import type {Chu3UserDataType} from "../../games/chu3/types/userdata.types.ts";
 import z from "zod";
 import {Chu3GameShopItem} from "../../games/chu3/models/gameshopitem.model.ts";
+import {deleteRedisKey} from "../../modules/redis.ts";
 
 const chuniApiRouter = Router({mergeParams: true});
 
@@ -281,6 +282,9 @@ chuniApiRouter.patch("/options",
 			{new: true, upsert: true}
 		);
 
+		// clear user options cache
+		deleteRedisKey("GetUserOptionApi", req.cardId);
+
 		res.json(updatedOptions);
 	}
 );
@@ -295,6 +299,9 @@ chuniApiRouter.patch("/userdata",
 			{$set: req.body},
 			{new: true, upsert: true}
 		);
+
+		// clear userdata cache
+		deleteRedisKey("GetUserDataApi", req.cardId);
 
 		res.json(updatedUserData);
 	}
@@ -313,6 +320,9 @@ chuniApiRouter.patch("/rivals",
 			{new: true, upsert: true}
 		);
 
+		// clear rivals cache
+		deleteRedisKey("GetUserRival", req.cardId);
+
 		res.json(updatedUserMisc);
 	}
 );
@@ -329,6 +339,9 @@ chuniApiRouter.patch("/chatsymbols",
 			{$set: {chatSymbols: req.body.chatSymbols}},
 			{new: true, upsert: true}
 		);
+
+		// clear userteam cache
+		deleteRedisKey("GetUserSymbolChatSettingApi", req.cardId);
 
 		res.json(updatedUserMisc);
 	}
@@ -364,6 +377,9 @@ chuniApiRouter.post("/team/:teamId/join", async (req: Request, res) => {
 		teamId: teamId
 	});
 
+	// clear userteam cache
+	deleteRedisKey("GetUserTeamApi", req.cardId);
+
 	res.json(newMembership);
 });
 
@@ -394,6 +410,9 @@ chuniApiRouter.post("/team/create",
 
 		const highestTeam = await Chu3Team.findOne().sort({teamId: -1});
 		const nextTeamId = highestTeam ? highestTeam.teamId + 1 : 1;
+
+		// clear userteam cache
+		deleteRedisKey("GetUserTeamApi", req.cardId);
 
 		const newTeam = await Chu3Team.create({
 			teamId: nextTeamId,
@@ -426,6 +445,9 @@ chuniApiRouter.post("/team/leave", async (req: Request, res) => {
 		return res.status(400).json({message: "You are the owner of the team, you cannot leave. You can delete the team if you want to disband it."});
 	}
 
+	// clear userteam cache
+	deleteRedisKey("GetUserTeamApi", req.cardId);
+
 	await existingMembership.deleteOne();
 
 	res.json({message: "success"});
@@ -449,6 +471,12 @@ chuniApiRouter.post("/team/disband", async (req: Request, res) => {
 	}
 
 	// Delete all memberships
+	const oldMemberships = await Chu3UserTeam.find({teamId: team.teamId});
+	for (const membership of oldMemberships) {
+		// clear userteam cache
+		deleteRedisKey("GetUserTeamApi", membership.cardId);
+	}
+
 	await Chu3UserTeam.deleteMany({teamId: team.teamId});
 	// Delete the team
 	await team.deleteOne();
@@ -525,6 +553,9 @@ chuniApiRouter.post("/shop/purchase/:articleId",
 		} else {
 			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {point: -shopItem.price}});
 		}
+
+		// clear items cache
+		deleteRedisKey("GetUserItemApi", req.cardId);
 
 		res.json({message: "success"});
 	});
@@ -620,6 +651,9 @@ chuniApiRouter.post("/music/import",
 		if (bulkOps.length > 0) {
 			await Chu3UserMusicDetail.bulkWrite(bulkOps);
 		}
+
+		// clear music cache
+		deleteRedisKey("GetUserMusicApi", req.cardId);
 
 		res.json({message: "Import complete", updated: bulkOps.length});
 	});

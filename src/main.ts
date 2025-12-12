@@ -20,6 +20,7 @@ import errorMiddleware from "./middleware/error.ts";
 import cors from "cors";
 import {toNodeHandler} from "better-auth/node";
 import {auth} from "./utils/auth.ts";
+import {redisClient} from "./modules/redis.ts";
 
 // JSON
 declare global {
@@ -36,20 +37,65 @@ const app = express();
 
 connectDB();
 
-const gameEndpointMiddleware:RequestHandler = (req, res, next) => {
+redisClient.keys("cache:*").then(keys => {
+	if(keys.length > 0) {
+		redisClient.del(keys);
+		log("redis", `Cleared ${keys.length} cache keys on startup`);
+	}
+});
+
+const gameEndpointMiddleware:RequestHandler = async (req, res, next) => {
 	const game = req.originalUrl.split("/")[2];
 	const ver = req.originalUrl.split("/")[3];
-	const relevantUrl = req.originalUrl.split("/")[req.originalUrl.split("/").length - 1];
+	const relevantUrl = req.originalUrl.split("/")[req.originalUrl.split("/").length - 1] || "";
 
 	req.headers["gameVersion"] = ver;
 
 	log("gamePath", `[${game}] -> /${relevantUrl}`);
 	console.debug(chalk.yellow(`>>> ${JSON.stringify(req.body)}`));
 
+	let sent = false;
+
+	if (!relevantUrl.includes("Upsert")&&!relevantUrl.includes("GameLogin")) {
+		const identifier = JSON.stringify(req.body);
+		const cacheKey = `cache:${game}:${ver}:${relevantUrl}:${identifier}`;
+
+		const cachedResponse = await redisClient.get(cacheKey);
+
+		if (cachedResponse) {
+			log("redis", `Cache hit for ${cacheKey}`);
+			const buffer = Buffer.from(cachedResponse, "base64");
+			log("game", `<<< ${buffer.toString()}`);
+			const zipped = zlib.deflateSync(buffer);
+
+			res.setHeader("Content-Type", "application/octet-stream");
+			res.send(zipped);
+			sent = true;
+		} else {
+			log("redis", `Cache miss for ${cacheKey}`);
+		}
+	}
+
+	if (sent) return;
+
 	const originalSend = res.send.bind(res);
 
 	res.send = (body) => {
 		log("game", `<<< ${body}`);
+		const identifier = JSON.stringify(req.body);
+
+		if (!relevantUrl.includes("Upsert")&&!relevantUrl.includes("GameLogin")) {
+			const cacheKey = `cache:${game}:${ver}:${relevantUrl}:${identifier}`;
+
+			redisClient.setEx(cacheKey, 86400, Buffer.isBuffer(body) ? body.toString("base64") : Buffer.from(typeof body === "string" ? body : JSON.stringify(body)).toString("base64"))
+				.then(() => {
+					log("redis", `Cached response for ${cacheKey}`);
+				})
+				.catch((err) => {
+					log("redis", `Error caching response for ${cacheKey}: ${err.message}`);
+				});
+		}
+
 		let buffer;
 
 		if (Buffer.isBuffer(body)) {
@@ -86,7 +132,7 @@ app.use("/", (req, res, next) => {
 app.use("/sys/", allNetEndpointMiddleware, text({ type: "*/*" }), allNetRouter);
 
 // Games
-app.use("/g/chu3/:ver/", json(), gameEndpointMiddleware, (req, res, next)=>{
+app.use("/g/chu3/:ver/", json({limit: "50mb"}), gameEndpointMiddleware, (req, res, next)=>{
 	const ver = req.params.ver!;
 
 	const gameVersion = CHU3VERSIONS.find(v => v.roms.includes(ver));
@@ -100,12 +146,12 @@ app.use("/g/chu3/:ver/", json(), gameEndpointMiddleware, (req, res, next)=>{
 
 	next();
 }, chu3Router);
-app.use("/g/cmchu3/:ver/", json(), gameEndpointMiddleware, chu3CMRouter);
-app.use("/g/ongeki/:ver/", json(), gameEndpointMiddleware, gekiRouter);
-app.use("/g/cmongeki/:ver/", json(), gameEndpointMiddleware, gekiCMRouter);
-app.use("/g/mai2/", json(), gameEndpointMiddleware, mai2Router);
-app.use("/g/cmmai2/:ver/", json(), gameEndpointMiddleware, mai2CMRouter);
-app.use("/g/card/", json(), gameEndpointMiddleware, cmRouter);
+app.use("/g/cmchu3/:ver/", json({limit: "50mb"}), gameEndpointMiddleware, chu3CMRouter);
+app.use("/g/ongeki/:ver/", json({limit: "50mb"}), gameEndpointMiddleware, gekiRouter);
+app.use("/g/cmongeki/:ver/", json({limit: "50mb"}), gameEndpointMiddleware, gekiCMRouter);
+app.use("/g/mai2/", json({limit: "50mb"}), gameEndpointMiddleware, mai2Router);
+app.use("/g/cmmai2/:ver/", json({limit: "50mb"}), gameEndpointMiddleware, mai2CMRouter);
+app.use("/g/card/", json({limit: "50mb"}), gameEndpointMiddleware, cmRouter);
 
 app.use(cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}));
 

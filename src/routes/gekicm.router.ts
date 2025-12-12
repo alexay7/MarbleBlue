@@ -15,6 +15,7 @@ import type {
 } from "../games/geki/types/usergacha.types.ts";
 import {GekiUserCharacter} from "../games/geki/models/usercharacter.model.ts";
 import {GekiUserActivity} from "../games/geki/models/useractivity.model.ts";
+import {deleteRedisKey} from "../modules/redis.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -206,6 +207,9 @@ gekiCMRouter.post("/CMUpsertUserGachaApi", async (req:Request<unknown, unknown, 
 
 	const {userId, gachaId, gachaCnt, selectPoint, cmUpsertUserGacha} = req.body;
 
+	// clear user gacha cache
+	deleteRedisKey("GetUserGachaApi", body.userId);
+
 	const foundUserGacha = await GekiUserGacha.findOneAndUpdate({userId, gachaId}, {
 		$inc:{
 			selectPoint,
@@ -234,12 +238,21 @@ gekiCMRouter.post("/CMUpsertUserGachaApi", async (req:Request<unknown, unknown, 
 	}
 
 	if (cmUpsertUserGacha.userData && cmUpsertUserGacha.userData.length>0) {
+		// clear userdata cache
+		deleteRedisKey("GetUserDataApi", body.userId);
+		deleteRedisKey("CMGetUserDataApi", body.userId);
+		deleteRedisKey("GetUserPreviewApi", body.userId);
+
 		const newUserData = cmUpsertUserGacha.userData[0]!;
 
 		await GekiUserData.findOneAndUpdate({userId: userId, version}, {cmEventWatchedDate:dayjs(newUserData.lastPlayDate).toDate()}, {upsert: true});
 	}
 
 	if (cmUpsertUserGacha.userCharacterList && cmUpsertUserGacha.userCharacterList.length>0) {
+		// clear userchars cache
+		deleteRedisKey("GetUserCharacterApi", body.userId);
+		deleteRedisKey("CMGetUserCharacterApi", body.userId);
+
 		const bulkOps = cmUpsertUserGacha.userCharacterList.map(char => {
 			char.userId = userId;
 			return {
@@ -255,6 +268,10 @@ gekiCMRouter.post("/CMUpsertUserGachaApi", async (req:Request<unknown, unknown, 
 	}
 
 	if (cmUpsertUserGacha.userItemList && cmUpsertUserGacha.userItemList.length>0) {
+		// clear useritems cache
+		deleteRedisKey("GetUserItemApi", body.userId);
+		deleteRedisKey("CMGetUserItemApi", body.userId);
+
 		const bulkOps = cmUpsertUserGacha.userItemList.map(item => {
 			item.userId = userId;
 			return {
@@ -270,6 +287,10 @@ gekiCMRouter.post("/CMUpsertUserGachaApi", async (req:Request<unknown, unknown, 
 	}
 
 	if (cmUpsertUserGacha.userCardList && cmUpsertUserGacha.userCardList.length>0) {
+		// clear card cache
+		deleteRedisKey("GetUserCardApi", body.userId);
+		deleteRedisKey("CMGetUserCardApi", body.userId);
+
 		const bulkOps = cmUpsertUserGacha.userCardList.map(card => {
 			card.userId = userId;
 			card.kaikaDate = dayjs(card.kaikaDate).toDate();
@@ -303,12 +324,20 @@ gekiCMRouter.post("/CMUpsertUserAllApi", async (req:Request<unknown, unknown, {
 	const {userId, cmUpsertUserAll} = req.body;
 
 	if (cmUpsertUserAll.userData && cmUpsertUserAll.userData.length>0) {
+		// clear userdata cache
+		deleteRedisKey("GetUserDataApi", body.userId);
+		deleteRedisKey("CMGetUserDataApi", body.userId);
+		deleteRedisKey("GetUserPreviewApi", body.userId);
+
 		const newUserData = cmUpsertUserAll.userData[0]!;
 
 		await GekiUserData.findOneAndUpdate({userId: userId, version}, {cmEventWatchedDate:dayjs(newUserData.lastPlayDate).toDate()}, {upsert: true});
 	}
 
 	if (cmUpsertUserAll.userActivity && cmUpsertUserAll.userActivity.length>0) {
+		// clear activity cache
+		deleteRedisKey("GetUserActivityApi", body.userId);
+
 		const bulkOps = cmUpsertUserAll.userActivity.map(activity => {
 			activity.userId = userId;
 			return {
@@ -324,6 +353,10 @@ gekiCMRouter.post("/CMUpsertUserAllApi", async (req:Request<unknown, unknown, {
 	}
 
 	if (cmUpsertUserAll.userCharacterList && cmUpsertUserAll.userCharacterList.length>0) {
+		// clear userchars cache
+		deleteRedisKey("GetUserCharacterApi", body.userId);
+		deleteRedisKey("CMGetUserCharacterApi", body.userId);
+
 		const bulkOps = cmUpsertUserAll.userCharacterList.map(char => {
 			char.userId = userId;
 			return {
@@ -339,6 +372,10 @@ gekiCMRouter.post("/CMUpsertUserAllApi", async (req:Request<unknown, unknown, {
 	}
 
 	if (cmUpsertUserAll.userItemList && cmUpsertUserAll.userItemList.length>0) {
+		// clear useritems cache
+		deleteRedisKey("GetUserItemApi", body.userId);
+		deleteRedisKey("CMGetUserItemApi", body.userId);
+
 		const bulkOps = cmUpsertUserAll.userItemList.map(item => {
 			item.userId = userId;
 			return {
@@ -354,6 +391,10 @@ gekiCMRouter.post("/CMUpsertUserAllApi", async (req:Request<unknown, unknown, {
 	}
 
 	if (cmUpsertUserAll.userCardList && cmUpsertUserAll.userCardList.length>0) {
+		// clear card cache
+		deleteRedisKey("GetUserCardApi", body.userId);
+		deleteRedisKey("CMGetUserCardApi", body.userId);
+
 		const bulkOps = cmUpsertUserAll.userCardList.map(card => {
 			card.userId = userId;
 			card.kaikaDate = dayjs(card.kaikaDate).toDate();
@@ -388,12 +429,20 @@ gekiCMRouter.post("/CMUpsertUserSelectGachaApi", async (req:Request<unknown, unk
 	const {userId, cmUpsertUserSelectGacha, selectGachaLogList} = req.body;
 
 	if (cmUpsertUserSelectGacha.userData && cmUpsertUserSelectGacha.userData.length>0) {
+		// clear userdata cache
+		deleteRedisKey("GetUserDataApi", body.userId);
+		deleteRedisKey("CMGetUserDataApi", body.userId);
+		deleteRedisKey("GetUserPreviewApi", body.userId);
+
 		const newUserData = cmUpsertUserSelectGacha.userData[0]!;
 
 		await GekiUserData.findOneAndUpdate({userId: userId, version}, {cmEventWatchedDate:dayjs(newUserData.lastPlayDate).toDate()}, {upsert: true});
 	}
 
 	if (selectGachaLogList && selectGachaLogList.length>0) {
+		// clear user gacha cache
+		deleteRedisKey("GetUserGachaApi", body.userId);
+
 		const selectInfo = selectGachaLogList[0]!;
 
 		await GekiUserGacha.findOneAndUpdate({userId, gachaId: selectInfo.gachaId}, {
@@ -403,6 +452,10 @@ gekiCMRouter.post("/CMUpsertUserSelectGachaApi", async (req:Request<unknown, unk
 	}
 
 	if (cmUpsertUserSelectGacha.userCharacterList && cmUpsertUserSelectGacha.userCharacterList.length>0) {
+		// clear userchars cache
+		deleteRedisKey("GetUserCharacterApi", body.userId);
+		deleteRedisKey("CMGetUserCharacterApi", body.userId);
+
 		const bulkOps = cmUpsertUserSelectGacha.userCharacterList.map(char => {
 			char.userId = userId;
 			return {
@@ -418,6 +471,10 @@ gekiCMRouter.post("/CMUpsertUserSelectGachaApi", async (req:Request<unknown, unk
 	}
 
 	if (cmUpsertUserSelectGacha.userCardList && cmUpsertUserSelectGacha.userCardList.length>0) {
+		// clear card cache
+		deleteRedisKey("GetUserCardApi", body.userId);
+		deleteRedisKey("CMGetUserCardApi", body.userId);
+
 		const bulkOps = cmUpsertUserSelectGacha.userCardList.map(card => {
 			card.userId = userId;
 			card.kaikaDate = dayjs(card.kaikaDate).toDate();

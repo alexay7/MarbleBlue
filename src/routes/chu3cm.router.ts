@@ -9,6 +9,7 @@ import {Chu3UserItem} from "../games/chu3/models/useritem.model.ts";
 import {Chu3UserGacha} from "../games/chu3/models/usergacha.model.ts";
 import type {Chu3GameGachaCardType} from "../games/chu3/types/gamegacha.types.ts";
 import type {Chu3UserItemType} from "../games/chu3/types/useritem.types.ts";
+import {deleteRedisKey} from "../modules/redis.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -155,6 +156,9 @@ chu3CMRouter.post("/CMUpsertUserGachaApi", async (req:Request, res) => {
 	const {cmUpsertUserGacha, gachaId}=req.body;
 
 	if (cmUpsertUserGacha.userItemList && cmUpsertUserGacha.userItemList.length > 0) {
+		// clear useritems cache
+		deleteRedisKey("GetUserItemApi", req.body.userId);
+
 		await Chu3UserItem.bulkWrite(
 			cmUpsertUserGacha.userItemList.map((item: Chu3UserItemType) => ({
 				updateOne: {
@@ -167,6 +171,9 @@ chu3CMRouter.post("/CMUpsertUserGachaApi", async (req:Request, res) => {
 	}
 
 	if (cmUpsertUserGacha.userGacha) {
+		// clear useritems cache
+		deleteRedisKey("GetUserGachaApi", req.body.userId);
+
 		await Chu3UserGacha.findOneAndUpdate(
 			{cardId: req.body.userId, gachaId: gachaId},
 			{$set: cmUpsertUserGacha.userGacha},
