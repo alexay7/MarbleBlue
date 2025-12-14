@@ -34,6 +34,9 @@ import {CHU3VERSIONS} from "../games/chu3/config.ts";
 import {Chu3GameCharge} from "../games/chu3/models/gamecharge.model.ts";
 import {Chu3UserLV} from "../games/chu3/models/userLV.model.ts";
 import {deleteRedisKey} from "../modules/redis.ts";
+import {Chu3GameMusic} from "../games/chu3/models/gamemusic.model.ts";
+import type {Chu3UserItemType} from "../games/chu3/types/useritem.types.ts";
+import {Types} from "mongoose";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -591,18 +594,41 @@ chu3Router.post("/ChuniServlet/GetUserItemApi", async (req: Request, res) => {
 	const kind = Math.floor(req.body.nextIndex / 10000000000);
 	let nextIndex = parseInt(req.body.nextIndex) % 10000000000 || 0;
 
-	const userItems = await Chu3UserItem.find({cardId: req.body.userId, itemKind: kind}, {
-		_id: 0,
-		cardId: 0,
-		__v: 0
-	}).skip(nextIndex).limit(limit + 1).lean();
+	let userItems: Chu3UserItemType[] = [];
 
-	if (!userItems) return res.json({
-		userId: req.body.userId,
-		length: 0,
-		nextIndex: -1,
-		userItemList: []
-	});
+	if (kind === 7) {
+		// Desbloquear todas las canciones del juego
+		const allGameSongs = await Chu3GameMusic.find({}, {id: 1, _id: 0}).skip(nextIndex).limit(limit + 1).lean();
+
+		if (!allGameSongs) return res.json({
+			userId: req.body.userId,
+			length: 0,
+			nextIndex: -1,
+			userItemList: []
+		});
+
+		userItems = allGameSongs.map(s=>({
+			_id:new Types.ObjectId(),
+			cardId: req.body.userId,
+			itemId: s.id,
+			isValid:true,
+			itemKind:7,
+			stock:1,
+		}));
+	} else {
+		userItems = await Chu3UserItem.find({cardId: req.body.userId, itemKind: kind}, {
+			_id: 0,
+			cardId: 0,
+			__v: 0
+		}).skip(nextIndex).limit(limit + 1).lean();
+
+		if (!userItems) return res.json({
+			userId: req.body.userId,
+			length: 0,
+			nextIndex: -1,
+			userItemList: []
+		});
+	}
 
 	nextIndex = userItems.length > limit ? kind * 10000000000 + (nextIndex + limit)
 		: -1;
