@@ -2,6 +2,7 @@ import type {Request, Response} from "express";
 import {Card} from "../games/common/models/card.model.ts";
 import {Types} from "mongoose";
 import {db} from "../modules/mongoose.ts";
+import {Keychip} from "../games/common/models/keychip.model.ts";
 
 export const userService = {
 	getUserData: async ( req: Request, res: Response) => {
@@ -57,6 +58,11 @@ export const userService = {
 		const updatedCard = await Card.findByIdAndUpdate(foundCard._id, {userId: req.currentUser!.id}, {new: true});
 
 		return res.json(updatedCard);
+	},
+	getUserKeychips: async ( req: Request, res: Response) => {
+		const foundKeychips = await Keychip.find({userId:new Types.ObjectId(req.currentUser!.id)});
+
+		return res.json(foundKeychips);
 	},
 	verifyUser: async ( userId: string) => {
 		await db.db?.collection("user")?.updateOne({_id:new Types.ObjectId(userId)}, {$set:{emailVerified: true, updatedAt: new Date()}});

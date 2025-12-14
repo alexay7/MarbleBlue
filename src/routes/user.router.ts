@@ -5,6 +5,10 @@ import z from "zod";
 
 const userRouter = Router({mergeParams:true});
 
+userRouter.get("/keychips",
+	userService.getUserKeychips
+);
+
 userRouter.get("/cards",
 	userService.getUserCards
 );
