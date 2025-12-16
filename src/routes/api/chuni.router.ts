@@ -10,9 +10,9 @@ import {Chu3UserGameOption} from "../../games/chu3/models/usergameoption.model.t
 import {customValidateRequest} from "../../utils/zod.ts";
 import {
 	importChu3MusicDto,
-	UpdateChu3TeamDto,
+	UpdateChu3TeamDto, UpdateChu3UserCharacterFavoriteDto,
 	UpdateChu3UserChatSymbolsDto,
-	UpdateChu3UserDataDto,
+	UpdateChu3UserDataDto, UpdateChu3UserMusicFavoriteDto,
 	UpdateChu3UserOptionsDto,
 	UpdateChu3UserRivalsDto
 } from "../../dto/chuni.dto.ts";
@@ -84,7 +84,7 @@ chuniApiRouter.get("/userteam", async (req: Request, res) => {
 			as: "memberInfo"
 		})
 		.lookup({
-			from: "users",
+			from: "user",
 			let: {user: "$teamInfo.ownerId"},
 			pipeline: [
 				{$match: {$expr: {$eq: ["$_id", "$$user"]}}},
@@ -342,6 +342,48 @@ chuniApiRouter.patch("/chatsymbols",
 
 		// clear userteam cache
 		deleteRedisKey("GetUserSymbolChatSettingApi", req.cardId);
+
+		res.json(updatedUserMisc);
+	}
+);
+
+chuniApiRouter.patch("/favoritemusic",
+	customValidateRequest({
+		body: UpdateChu3UserMusicFavoriteDto
+	}),
+	async (req: Request, res) => {
+		if (!req.body.favoriteMusicList) return res.status(400).json({message: "No favorite music provided"});
+
+		const updatedUserMisc = await Chu3UserMisc.findOneAndUpdate(
+			{cardId: req.cardId},
+			{$set: {favoriteMusicList: req.body.favoriteMusicList}},
+			{new: true, upsert: true}
+		);
+
+		// clear favorite music cache
+		deleteRedisKey("GetUserFavoriteItemApi", req.cardId);
+
+		res.json(updatedUserMisc);
+	}
+);
+
+chuniApiRouter.patch("/favoritechars",
+	customValidateRequest({
+		body:UpdateChu3UserCharacterFavoriteDto
+	}),
+	async (req: Request, res) => {
+		if (!req.body.favoriteCharacterList) return res.status(400).json({message: "No favorite characters provided"});
+
+		console.log(req.body.favoriteCharacterList);
+
+		const updatedUserMisc = await Chu3UserMisc.findOneAndUpdate(
+			{cardId: req.cardId},
+			{$set: {favoriteCharacterList: req.body.favoriteCharacterList}},
+			{new: true, upsert: true}
+		);
+
+		// clear favorite character cache
+		deleteRedisKey("GetUserFavoriteItemApi", req.cardId);
 
 		res.json(updatedUserMisc);
 	}

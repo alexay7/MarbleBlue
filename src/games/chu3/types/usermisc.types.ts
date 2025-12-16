@@ -8,10 +8,15 @@ export type Chu3UserRatingType = {
 }
 
 export type Chu3UserMusicFavoriteType = {
-    id: number;
+    musicId: number;
+    orderId: number;
 }
 
-export type Chu3UserRivalType = Chu3UserMusicFavoriteType & {
+export type Chu3UserFavoriteType = {
+    id:number;
+}
+
+export type Chu3UserRivalType = Chu3UserFavoriteType & {
     ktAlias: string;
 }
 
@@ -34,7 +39,7 @@ export type Chu3UserMiscType = {
     userRatingBaseNewNextList: Chu3UserRatingType[];
 
     favoriteMusicList: Chu3UserMusicFavoriteType[];
-    favoriteCharacterList: Chu3UserMusicFavoriteType[];
+    favoriteCharacterList: Chu3UserFavoriteType[];
     rivalList: Chu3UserRivalType[];
 
     chatSymbols:Chu3UserChatSymbolType[];

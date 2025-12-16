@@ -23,7 +23,7 @@ import {Chu3UserRegion} from "../games/chu3/models/userregion.model.ts";
 import {config} from "../config/config.ts";
 import {Chu3GameUC} from "../games/chu3/models/gameUC.model.ts";
 import {Chu3UserUC} from "../games/chu3/models/useruc.model.ts";
-import type {Chu3UserMusicFavoriteType} from "../games/chu3/types/usermisc.types.ts";
+import type {Chu3UserFavoriteType} from "../games/chu3/types/usermisc.types.ts";
 import {getChuniPBs} from "../utils/kt.ts";
 import {Chu3UserNetBattleData, Chu3UserNetBattleLog} from "../games/chu3/models/usernetbattle.model.ts";
 import {Chu3GameEvent} from "../games/chu3/models/gameevent.model.ts";
@@ -790,11 +790,11 @@ chu3Router.post("/ChuniServlet/GetUserFavoriteItemApi", async (req: Request, res
 		userFavoriteItemList: []
 	});
 
-	let list: Chu3UserMusicFavoriteType[];
+	let list: Chu3UserFavoriteType[];
 
 	switch (kind) {
 	case 1: {
-		list = userMisc.favoriteMusicList;
+		list = userMisc.favoriteMusicList.map(i=>({id:i.musicId}));
 		break;
 	}
 	case 2: {
@@ -1543,7 +1543,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	const newRating = body.upsertUserAll.userRatingBaseNewList || [];
 	const nextRating = body.upsertUserAll.userRatingBaseNextList || [];
 	const nextNewRating = body.upsertUserAll.userRatingBaseNewNextList || [];
-	const favoriteMusic = (body.upsertUserAll.userFavoriteMusicList || []).filter(m => m.id > -1);
+	const favoriteMusic = (body.upsertUserAll.userFavoriteMusicList || []).filter(m => m.musicId > -1);
 
 	await Chu3UserMisc.findOneAndUpdate({cardId: body.userId}, {
 		recentRatingList: recentRating,

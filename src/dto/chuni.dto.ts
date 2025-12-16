@@ -75,6 +75,18 @@ export const UpdateChu3UserChatSymbolsDto = z.object({
 	chatSymbols: z.array(UpdateChu3UserChatSymbolDto).min(20).max(20)
 });
 
+export const UpdateChu3UserMusicFavoriteDto = z.object({
+	favoriteMusicList: z.array(z.object({
+		musicId: z.number().min(0),
+	})).max(50),
+});
+
+export const UpdateChu3UserCharacterFavoriteDto = z.object({
+	favoriteCharacterList: z.array(z.object({
+		id: z.number().min(0),
+	})),
+});
+
 export const UpdateChu3TeamDto = z.object({
 	teamName: z.string().min(1).max(16).optional(),
 });

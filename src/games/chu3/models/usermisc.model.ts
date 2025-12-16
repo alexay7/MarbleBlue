@@ -15,11 +15,15 @@ const userRatingSchema = new Schema<Chu3UserRatingType>({
 }, {_id:false});
 
 const userMusicFavoriteSchema = new Schema<Chu3UserMusicFavoriteType>({
+	musicId: {type: Number, required: true},
+	orderId: {type: Number, required: true},
+}, {_id:false});
+
+const userFavoriteSchema = new Schema<{id:number}>({
 	id: {type: Number, required: true},
 }, {_id:false});
 
 const userRivalSchema = new Schema<Chu3UserRivalType>({
-	id: {type: Number, required: true},
 	ktAlias: {type: String},
 }, {_id:false});
 const userChatSymbolSchema = new Schema<Chu3UserChatSymbolType>({
@@ -41,7 +45,7 @@ const chu3UserMiscSchema = new Schema<Chu3UserMiscType>({
 	userRatingBaseNewNextList: {type: [userRatingSchema], default: []},
 
 	favoriteMusicList: {type: [userMusicFavoriteSchema], default: []},
-	favoriteCharacterList: {type: [userMusicFavoriteSchema], default: []},
+	favoriteCharacterList: {type: [userFavoriteSchema], default: []},
 	rivalList: {type: [userRivalSchema], default: []},
 
 	chatSymbols:{type: [userChatSymbolSchema], default: [
