@@ -7,7 +7,7 @@ const mai2UserFavoriteSchema = new Schema<Mai2UserFavoriteType>({
 	userId: {type: String, ref: "Card", required: true},
 
 	itemKind: {type: Number, required: true},
-	itemidList: {type: [Number], default: []},
+	itemIdList: {type: [Number], default: []},
 });
 
 mai2UserFavoriteSchema.index({userId: 1, itemKind: 1}, {unique: true});

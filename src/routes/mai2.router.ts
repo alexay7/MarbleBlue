@@ -383,7 +383,7 @@ mai2Router.post("/Maimai2Servlet/GetUserFavoriteApi", async (req, res) => {
 
 	const favId = req.body.itemKind;
 
-	const foundFavs = await Mai2UserFavoriteModel.find({userId: req.body.userId, itemKind: favId}).lean();
+	const foundFavs = await Mai2UserFavoriteModel.findOne({userId: req.body.userId, itemKind: favId}, {itemKind:1, itemIdList:1, _id:0}).lean();
 
 	res.json({
 		userId: req.body.userId,
@@ -558,7 +558,7 @@ mai2Router.post("/Maimai2Servlet/GetUserFavoriteItemApi", async (req:Request, re
 
 	const kind = req.body.kind;
 
-	const [foundFavs] = await Mai2UserFavoriteModel.find({userId: req.body.userId, itemKind: kind}).lean();
+	const foundFavs = await Mai2UserFavoriteModel.findOne({userId: req.body.userId, itemKind: kind}).lean();
 
 	if (!foundFavs) return res.json({
 		userId: req.body.userId,
@@ -571,9 +571,9 @@ mai2Router.post("/Maimai2Servlet/GetUserFavoriteItemApi", async (req:Request, re
 	res.json({
 		userId: req.body.userId,
 		itemKind: kind,
-		length: foundFavs.itemidList.length,
+		length: foundFavs.itemIdList.length,
 		nextIndex: 0,
-		userFavoriteList: foundFavs.itemidList
+		userFavoriteList: foundFavs.itemIdList
 	});
 });
 
@@ -587,8 +587,8 @@ mai2Router.post("/Maimai2Servlet/GetUserMissionDataApi", async (req:Request, res
 	res.json({
 		userId: req.body.userId,
 		userWeeklyData:{
-			lastLoginWeek: userData ? dayjs(userData.lastLoginDate).startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
-			beforeLoginWeek: userData ? dayjs(userData.lastLoginDate).subtract(1, "week").startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
+			lastLoginWeek: userData ? dayjs(userData.lastLoginDate).subtract(1, "week").startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
+			beforeLoginWeek: userData ? dayjs(userData.lastLoginDate).subtract(2, "week").startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
 			friendBonusFlag:false
 		},
 		userMissionDataList: foundMissions
@@ -1019,11 +1019,13 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 			return {
 				updateOne: {
 					filter: {userId: body.userId, itemKind: fav.itemKind},
-					update: {$set: fav},
+					update: {$set: {itemIdList: fav.itemIdList}},
 					upsert: true
 				}
 			};
 		});
+
+		console.log(body.upsertUserAll.userFavoriteList);
 
 		await Mai2UserFavoriteModel.bulkWrite(bulkOps);
 	}

@@ -6,5 +6,5 @@ export type Mai2UserFavoriteType = {
     userId: string;
 
     itemKind: number;
-    itemidList: number[];
+    itemIdList: number[];
 }

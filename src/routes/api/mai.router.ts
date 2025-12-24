@@ -245,17 +245,17 @@ maiApiRouter.patch("/useritems/favorites/:itemKind",
 			itemKind: z.string().transform((val) => parseInt(val, 10)).refine((val) => !isNaN(val) && val >= 0, {message: "Invalid item kind"})
 		}),
 		body: z.object({
-			itemidList: z.array(z.number().int().min(0))
+			itemIdList: z.array(z.number().int().min(0))
 		})
 	}),
 	async (req, res) => {
 		const {itemKind} = req.params;
-		const {itemidList} = req.body;
+		const {itemIdList} = req.body;
 
 		await Mai2UserFavoriteModel.findOneAndReplace({userId: req.cardId, itemKind}, {
 			userId: req.cardId,
 			itemKind,
-			itemidList
+			itemIdList
 		}, {upsert: true});
 
 		res.json({message: "success"});
