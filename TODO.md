@@ -17,7 +17,7 @@
 - [ ] Cron para reiniciar equipos mensualmente
 
 # 撃
-- [ ] Arreglar misiones semanales
+NO HAY TAREAS PENDIENTES
 
 # 舞
 NO HAY TAREAS PENDIENTES

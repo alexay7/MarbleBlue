@@ -26,6 +26,9 @@ import {Mai2GameChargeModel} from "../games/mai2/models/gamecharge.model.ts";
 import {Mai2UserMissionModel} from "../games/mai2/models/usermission.model.ts";
 import {Mai2UserCardModel} from "../games/mai2/models/usercard.model.ts";
 import {Mai2UserRegionModel} from "../games/mai2/models/userregion.model.ts";
+import {getThisWeeksCategoryRotation} from "../utils/mai.ts";
+import type {Mai2GameEventType} from "../games/mai2/types/gameevent.types.ts";
+import {Types} from "mongoose";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -92,7 +95,7 @@ mai2Router.post("/Maimai2Servlet/GetGameRankingApi", async (req, res) => {
 });
 
 mai2Router.post("/Maimai2Servlet/GetGameEventApi", async (req:Request, res) => {
-	const events = await Mai2GameEventModel.find({enable:true}, {id:1, type:1}).lean();
+	const events = await Mai2GameEventModel.find({enable:true}, {id:1, type:1}).lean() as Mai2GameEventType[];
 
 	res.json({
 		"type": req.body.type,
@@ -103,6 +106,16 @@ mai2Router.post("/Maimai2Servlet/GetGameEventApi", async (req:Request, res) => {
 			endDate:dayjs("2099-12-31").format("YYYY-MM-DD HH:mm:ss"),
 			disableArea:""
 		}))
+			// Eventos semanales de INTL
+			.concat([{
+				_id: new Types.ObjectId(),
+				id:BigInt(250724111),
+				type:0,
+				enable:true,
+				startDate:dayjs("2020-01-01").format("YYYY-MM-DD HH:mm:ss"),
+				endDate:dayjs("2099-12-31").format("YYYY-MM-DD HH:mm:ss"),
+				disableArea:""
+			}])
 	});
 });
 
@@ -210,16 +223,6 @@ mai2Router.post("/Maimai2Servlet/GetGameNgMusicIdApi", (_, res) => {
 	res.json({
 		length:0,
 		musicIdList:[]
-	});
-});
-
-mai2Router.post("/Maimai2Servlet/GetGameWeeklyDataApi", (_, res) => {
-	res.json({
-		gameWeeklyData: {
-			missionCategory: 0,
-			updateDate: "2024-03-21 09:00:00",
-			beforeDate: "2099-12-31 00:00:00"
-		}
 	});
 });
 
@@ -577,21 +580,29 @@ mai2Router.post("/Maimai2Servlet/GetUserFavoriteItemApi", async (req:Request, re
 	});
 });
 
+mai2Router.post("/Maimai2Servlet/GetGameWeeklyDataApi", (_, res) => {
+	res.json({
+		gameWeeklyData: {
+			missionCategory: getThisWeeksCategoryRotation(),
+			updateDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+			beforeDate: "2077-01-01 00:00:00.0"
+		}
+	});
+});
+
 mai2Router.post("/Maimai2Servlet/GetUserMissionDataApi", async (req:Request, res) => {
 	if (!req.body.userId) return res.json({});
 
 	const foundMissions = await Mai2UserMissionModel.find({userId: req.body.userId}).lean();
 
-	const userData = await Mai2UserDataModel.findOne({userId: req.body.userId}).lean();
-
 	res.json({
 		userId: req.body.userId,
 		userWeeklyData:{
-			lastLoginWeek: userData ? dayjs(userData.lastLoginDate).subtract(1, "week").startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
-			beforeLoginWeek: userData ? dayjs(userData.lastLoginDate).subtract(2, "week").startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
+			lastLoginWeek: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+			beforeLoginWeek: dayjs().subtract(7, "day").format("YYYY-MM-DD HH:mm:ss"),
 			friendBonusFlag:false
 		},
-		userMissionDataList: foundMissions
+		userMissionDataList: foundMissions,
 	});
 });
 
@@ -626,7 +637,7 @@ mai2Router.post("/Maimai2Servlet/GetUserShopStockApi", async (req:Request, res) 
 		userId: req.body.userId,
 		userShopStockList: items.map((id:number) => ({
 			shopItemId: id,
-			tradeCount: 0
+			tradeCount: 99
 		}))
 	});
 });
