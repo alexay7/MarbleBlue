@@ -17,11 +17,11 @@ function getGameUri(here:string, port:string, gameId:string, ver:string, session
 	case "SDDT":
 		return `${baseAddress}/ongeki/${ver}/`;
 	case "SDGA":
-		return `${baseAddress}/mai2/`;
+		return `${baseAddress}/mai2/${ver}/`;
 	case "SDGB":
-		return `${baseAddress}/mai2/`;
+		return `${baseAddress}/mai2/${ver}/`;
 	case "SDEZ":
-		return `${baseAddress}/mai2/`;
+		return `${baseAddress}/mai2/${ver}/`;
 	case "SDED":
 		return `${baseAddress}/card/`;
 	default:
@@ -30,7 +30,7 @@ function getGameUri(here:string, port:string, gameId:string, ver:string, session
 }
 
 allNetRouter.post("/servlet/PowerOn", async (req, res) => {
-	const here = req.header("AllNet-Forwarded-From") || config.ALLNET_HOST;
+	let here = req.header("AllNet-Forwarded-From") || config.ALLNET_HOST;
 
 	const reqMap = decodeAllNet(req.body);
 

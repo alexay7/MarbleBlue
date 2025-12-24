@@ -228,6 +228,15 @@ gekiApiRouter.get("/cards", async (req, res) => {
 	res.json(cards);
 });
 
+gekiApiRouter.get("/ranking", async (req: Request, res) => {
+	const topPlayers = await GekiUserData.find()
+		.sort({newPlayerRating: -1})
+		.limit(25)
+		.select({userName:1, newPlayerRating:1});
+
+	res.json(topPlayers);
+});
+
 gekiApiRouter.get("/loginbonus", async (req, res) => {
 	const type = req.query.type === "special" ? {bonusId:{$ne:100}} : {bonusId:100};
 

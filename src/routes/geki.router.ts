@@ -33,7 +33,6 @@ import {GekiUserRatingLog} from "../games/geki/models/userratinglog.model.ts";
 import {GekiUserRegion} from "../games/geki/models/userregion.model.ts";
 import {GekiGameEvent} from "../games/geki/models/gameevent.model.ts";
 import {getGekiPBs} from "../utils/kt.ts";
-import {deleteRedisKey} from "../modules/redis.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -818,11 +817,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userData && body.upsertUserAll.userData.length>0) {
-		// clear userdata cache
-		deleteRedisKey("GetUserDataApi", body.userId);
-		deleteRedisKey("CMGetUserDataApi", body.userId);
-		deleteRedisKey("GetUserPreviewApi", body.userId);
-
 		const newUserData = body.upsertUserAll.userData[0]!;
 
 		newUserData.userId = body.userId;
@@ -836,9 +830,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userOption && body.upsertUserAll.userOption.length>0) {
-		// clear gameoption cache
-		deleteRedisKey("GetUserOptionApi", body.userId);
-
 		const newUserGameOption = body.upsertUserAll.userOption[0]!;
 
 		newUserGameOption.userId = body.userId;
@@ -847,10 +838,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userCharacterList && body.upsertUserAll.userCharacterList.length>0) {
-		// clear userchars cache
-		deleteRedisKey("GetUserCharacterApi", body.userId);
-		deleteRedisKey("CMGetUserCharacterApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userCharacterList.map(char => {
 			char.userId = body.userId;
 			return {
@@ -866,10 +853,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userItemList && body.upsertUserAll.userItemList.length>0) {
-		// clear useritems cache
-		deleteRedisKey("GetUserItemApi", body.userId);
-		deleteRedisKey("CMGetUserItemApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userItemList.map(item => {
 			item.userId = body.userId;
 			return {
@@ -885,9 +868,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userMusicDetailList && body.upsertUserAll.userMusicDetailList.length>0) {
-		// clear musicdetails cache
-		deleteRedisKey("GetUserMusicApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMusicDetailList.map(music => {
 			music.userId = body.userId;
 			return {
@@ -903,9 +883,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userActivityList && body.upsertUserAll.userActivityList.length>0) {
-		// clear activity cache
-		deleteRedisKey("GetUserActivityApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userActivityList.map(activity => {
 			activity.userId = body.userId;
 			return {
@@ -921,10 +898,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userCardList && body.upsertUserAll.userCardList.length>0) {
-		// clear card cache
-		deleteRedisKey("GetUserCardApi", body.userId);
-		deleteRedisKey("CMGetUserCardApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userCardList.map(card => {
 			card.userId = body.userId;
 			card.kaikaDate = dayjs(card.kaikaDate).toDate().getTime()>1 ? dayjs(card.kaikaDate).toDate() : undefined;
@@ -943,9 +916,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if(body.upsertUserAll.userChapterList && body.upsertUserAll.userChapterList.length>0) {
-		// clear chapter cache
-		deleteRedisKey("GetUserChapterApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userChapterList.map(chapter => {
 			chapter.userId = body.userId;
 			return {
@@ -961,9 +931,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userMemoryChapterList && body.upsertUserAll.userMemoryChapterList.length>0) {
-		// clear chapter cache
-		deleteRedisKey("GetUserMemoryChapterApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMemoryChapterList.map(chapter => {
 			chapter.userId = body.userId;
 			return {
@@ -979,9 +946,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if(body.upsertUserAll.userDeckList && body.upsertUserAll.userDeckList.length>0) {
-		// clear deck cache
-		deleteRedisKey("GetUserDeckByKeyApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userDeckList.map(deck => {
 			deck.userId = body.userId;
 			return {
@@ -997,9 +961,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if(body.upsertUserAll.userLoginBonusList && body.upsertUserAll.userLoginBonusList.length>0) {
-		// clear login bonus cache
-		deleteRedisKey("GetUserLoginBonusApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userLoginBonusList.map(bonus => {
 			bonus.userId = body.userId;
 			bonus.lastUpdateDate = dayjs(bonus.lastUpdateDate).toDate();
@@ -1036,9 +997,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userMissionPointList && body.upsertUserAll.userMissionPointList.length>0) {
-		// clear mission cache
-		deleteRedisKey("GetUserMissionPointApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMissionPointList.map(point => {
 			point.userId = body.userId;
 			return {
@@ -1054,9 +1012,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userEventPointList && body.upsertUserAll.userEventPointList.length>0) {
-		// clear event cache
-		deleteRedisKey("GetUserEventPointApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userEventPointList.map(point => {
 			point.userId = body.userId;
 			return {
@@ -1072,9 +1027,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userStoryList && body.upsertUserAll.userStoryList.length>0) {
-		// clear story cache
-		deleteRedisKey("GetUserStoryApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userStoryList.map(story => {
 			story.userId = body.userId;
 			return {
@@ -1090,9 +1042,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userTrainingRoomList && body.upsertUserAll.userTrainingRoomList.length>0) {
-		// clear training cache
-		deleteRedisKey("GetUserTrainingRoomByKeyApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userTrainingRoomList.map(room => {
 			room.userId = body.userId;
 			room.valueDate = dayjs(room.valueDate).toDate();
@@ -1109,9 +1058,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userMusicItemList && body.upsertUserAll.userMusicItemList.length>0) {
-		// clear music item cache
-		deleteRedisKey("GetUserMusicItemApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMusicItemList.map(item => {
 			item.userId = body.userId;
 			return {
@@ -1127,9 +1073,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userBossList && body.upsertUserAll.userBossList.length>0) {
-		// clear boss cache
-		deleteRedisKey("GetUserBossApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userBossList.map(boss => {
 			boss.userId = body.userId;
 			return {
@@ -1145,9 +1088,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userTechCountList && body.upsertUserAll.userTechCountList.length>0) {
-		// clear techcount cache
-		deleteRedisKey("GetUserTechCountApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userTechCountList.map(count => {
 			count.userId = body.userId;
 			return {
@@ -1163,9 +1103,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userScenarioList && body.upsertUserAll.userScenarioList.length>0) {
-		// clear scenario cache
-		deleteRedisKey("GetUserScenarioApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userScenarioList.map(scenario => {
 			scenario.userId = body.userId;
 			return {
@@ -1181,9 +1118,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userTradeItemList && body.upsertUserAll.userTradeItemList.length>0) {
-		// clear tradeitem cache
-		deleteRedisKey("GetUserTradeItemApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userTradeItemList.map(item => {
 			item.userId = body.userId;
 			return {
@@ -1199,9 +1133,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userEventMusicList && body.upsertUserAll.userEventMusicList.length>0) {
-		// clear event music cache
-		deleteRedisKey("GetUserEventMusicApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userEventMusicList.map(music => {
 			music.userId = body.userId;
 			music.techRecordDate = dayjs(music.techRecordDate).toDate();
@@ -1218,9 +1149,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userTechEventList && body.upsertUserAll.userTechEventList.length>0) {
-		// clear tech event cache
-		deleteRedisKey("GetUserTechEventApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userTechEventList.map(event => {
 			event.userId = body.userId;
 			event.techRecordDate = dayjs(event.techRecordDate).toDate();
@@ -1237,9 +1165,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if (body.upsertUserAll.userKopList && body.upsertUserAll.userKopList.length>0) {
-		// clear kop cache
-		deleteRedisKey("GetUserKopApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userKopList.map(kop => {
 			kop.userId = body.userId;
 			return {
@@ -1255,9 +1180,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if(body.upsertUserAll.userEventMap) {
-		// clear event map cache
-		deleteRedisKey("GetUserEventMapApi", body.userId);
-
 		const eventMap = body.upsertUserAll.userEventMap;
 		eventMap.userId = body.userId;
 
@@ -1265,9 +1187,6 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 	}
 
 	if(body.upsertUserAll.userRatinglogList && body.upsertUserAll.userRatinglogList.length>0) {
-		// clear rating log cache
-		deleteRedisKey("GetUserRatinglogApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userRatinglogList.map(rating => {
 			rating.userId = body.userId;
 			return {

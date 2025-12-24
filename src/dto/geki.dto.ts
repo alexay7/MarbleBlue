@@ -42,7 +42,6 @@ export const UpdateGekiUserOptionsDto = z.object({
 
 export const UpdateGekiUserDataDto = z.strictObject({
 	userName: z.string().min(1).regex(/^[Ａ-Ｚａ-ｚ０-９ぁ-んァ-ヶー一-龠々・．：；？！～／＋－×÷＝♂♀∀＃＆＊＠☆○◎◇□△▽♪†‡ΣαβγθφψωДё]+$/).optional(),
-	cardId: z.number().optional(),
 	nameplateId: z.number().optional(),
 	trophyId: z.number().optional(),
 	characterId: z.number().optional(),

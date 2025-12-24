@@ -26,3 +26,21 @@ export const CHU3VERSIONS = [
 		data: "2.40.12"
 	}
 ];
+
+export const GEKIVERSIONS = [];
+
+export const MAIVERSIONS = [
+	{
+		index: 25,
+		roms: [
+			"1.55",
+			"1.56"
+		]
+	},
+	{
+		index: 26,
+		roms: [
+			"1.60"
+		]
+	}
+];

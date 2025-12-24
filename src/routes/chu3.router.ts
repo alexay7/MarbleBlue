@@ -33,7 +33,6 @@ import {Chu3GameMapConditions} from "../games/chu3/models/gamemapconditions.mode
 import {CHU3VERSIONS} from "../games/chu3/config.ts";
 import {Chu3GameCharge} from "../games/chu3/models/gamecharge.model.ts";
 import {Chu3UserLV} from "../games/chu3/models/userLV.model.ts";
-import {deleteRedisKey} from "../modules/redis.ts";
 import {Chu3GameMusic} from "../games/chu3/models/gamemusic.model.ts";
 import type {Chu3UserItemType} from "../games/chu3/types/useritem.types.ts";
 import {Types} from "mongoose";
@@ -1199,19 +1198,15 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userData && body.upsertUserAll.userData.length > 0) {
-		// clear userdata cache
-		deleteRedisKey("GetUserDataApi", body.userId);
-		deleteRedisKey("CMGetUserDataApi", body.userId);
-		deleteRedisKey("GetUserPreviewApi", body.userId);
-		deleteRedisKey("CMGetUserPreviewApi", body.userId);
-
 		const newUserData = body.upsertUserAll.userData[0]!;
+		const oldUserData = await Chu3UserData.findOne({cardId: body.userId}).sort({version: -1}).lean();
 
 		newUserData.cardId = body.userId;
 		newUserData.version = version;
 		newUserData.lastPlayDate = dayjs(newUserData.lastPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
 		newUserData.eventWatchedDate = dayjs(newUserData.eventWatchedDate, "YYYY-MM-DD HH:mm:ss").toDate();
 		newUserData.firstPlayDate = dayjs(newUserData.firstPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
+		newUserData.ppoint = (body.upsertUserAll.userPlaylogList?.length||0) * 2 + (oldUserData?.ppoint || 0);
 
 		await Chu3UserData.findOneAndReplace({cardId: body.userId, version}, newUserData, {upsert: true});
 	}
@@ -1219,18 +1214,12 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	if (body.upsertUserAll.userGameOption && body.upsertUserAll.userGameOption.length > 0) {
 		const newUserGameOption = body.upsertUserAll.userGameOption[0]!;
 
-		// clear gameoption cache
-		deleteRedisKey("GetUserOptionApi", body.userId);
-
 		newUserGameOption.cardId = body.userId;
 
 		await Chu3UserGameOption.findOneAndReplace({cardId: body.userId}, newUserGameOption, {upsert: true});
 	}
 
 	if (body.upsertUserAll.userCharacterList && body.upsertUserAll.userCharacterList.length > 0) {
-		// clear userchars cache
-		deleteRedisKey("GetUserCharacterApi", body.userId);
-		deleteRedisKey("CMGetUserCharacterApi", body.userId);
 
 		const bulkOps = body.upsertUserAll.userCharacterList.map(char => {
 			char.cardId = body.userId;
@@ -1247,10 +1236,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if( body.upsertUserAll.userLoginBonusList && body.upsertUserAll.userLoginBonusList.length > 0) {
-
-		// clear userloginbonus cache
-		deleteRedisKey("GetUserLoginBonusApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userLoginBonusList.map(bonus => {
 			bonus.cardId = body.userId;
 			bonus.lastUpdateDate = dayjs(bonus.lastUpdateDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1268,9 +1253,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userItemList && body.upsertUserAll.userItemList.length > 0) {
-		// clear useritems cache
-		deleteRedisKey("GetUserItemApi", body.userId);
-		deleteRedisKey("CMGetUserItemApi", body.userId);
 
 		const bulkOps = body.upsertUserAll.userItemList.map(item => {
 			item.cardId = body.userId;
@@ -1287,8 +1269,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userMusicDetailList && body.upsertUserAll.userMusicDetailList.length > 0) {
-		// clear musicdetails cache
-		deleteRedisKey("GetUserMusicApi", body.userId);
 
 		const bulkOps = body.upsertUserAll.userMusicDetailList.map(music => {
 			music.cardId = body.userId;
@@ -1305,9 +1285,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userActivityList && body.upsertUserAll.userActivityList.length > 0) {
-		// clear activity cache
-		deleteRedisKey("GetUserActivityApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userActivityList.map(activity => {
 			activity.cardId = body.userId;
 			return {
@@ -1337,11 +1314,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 
 		await Chu3UserPlaylog.bulkWrite(bulkOps);
 
-		// Añadir ppoints por las canciones jugadas (2 por canción)
-		await Chu3UserData.findOneAndUpdate({cardId: body.userId}, {
-			$inc: {ppoint: body.upsertUserAll.userPlaylogList.length * 2}
-		});
-
 		// Actualizar también la región del usuario
 		const [firstLog] = body.upsertUserAll.userPlaylogList;
 		const region = firstLog!.regionId;
@@ -1352,10 +1324,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userTeamPoint && body.upsertUserAll.userTeamPoint.length > 0) {
-
-		// clear userteam cache
-		deleteRedisKey("GetUserTeamApi", body.userId);
-
 		const newUserTeam = body.upsertUserAll.userTeamPoint[0]!;
 
 		await Chu3UserTeam.findOneAndUpdate({cardId: body.userId, teamId: newUserTeam.teamId}, {
@@ -1364,10 +1332,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userMapAreaList && body.upsertUserAll.userMapAreaList.length > 0) {
-
-		// clear maparea cache
-		deleteRedisKey("GetUserMapAreaApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMapAreaList.map(area => {
 			area.cardId = body.userId;
 			return {
@@ -1383,10 +1347,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userCMissionList && body.upsertUserAll.userCMissionList.length > 0) {
-
-		// clear usermissions cache
-		deleteRedisKey("GetUserCMissionListApi", body.userId);
-
 		// First process the missions
 		const bulkOps = body.upsertUserAll.userCMissionList.map(mission => {
 			mission.cardId = body.userId;
@@ -1419,10 +1379,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userCourseList && body.upsertUserAll.userCourseList.length > 0) {
-
-		// clear usercourses cache
-		deleteRedisKey("GetUserCourseApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userCourseList.map(course => {
 			course.cardId = body.userId;
 			course.lastPlayDate = dayjs(course.lastPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1439,10 +1395,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userUnlockChallengeList && body.upsertUserAll.userUnlockChallengeList.length > 0) {
-
-		// clear UC cache
-		deleteRedisKey("GetUserUCApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userUnlockChallengeList.map(uc => {
 			uc.cardId = body.userId;
 			uc.clearDate = dayjs(uc.clearDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1459,10 +1411,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if(body.upsertUserAll.userLinkedVerseList && body.upsertUserAll.userLinkedVerseList.length > 0) {
-
-		// clear LV cache
-		deleteRedisKey("GetUserLVApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userLinkedVerseList.map(lv => {
 			lv.cardId = body.userId;
 			lv.clearDate = dayjs(lv.clearDate, "YYYY-MM-DD HH:mm:ss").toDate();
@@ -1500,8 +1448,6 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 	}
 
 	if (body.upsertUserAll.userNetBattleData && body.upsertUserAll.userNetBattleData.length > 0) {
-
-		deleteRedisKey("GetUserNetBattleDataApi", body.userId);
 
 		const newNetBattleData = body.upsertUserAll.userNetBattleData[0]!;
 

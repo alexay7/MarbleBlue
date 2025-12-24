@@ -8,7 +8,6 @@ import {Mai2UserItemModel} from "../games/mai2/models/useritem.model.ts";
 import {Mai2GameCardModel} from "../games/mai2/models/gamecards.model.ts";
 import type {Mai2UserCardType} from "../games/mai2/types/usercard.types.ts";
 import {Mai2UserCardModel} from "../games/mai2/models/usercard.model.ts";
-import {deleteRedisKey} from "../modules/redis.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -117,9 +116,6 @@ mai2CMRouter.post("/CMUpsertUserPrintApi", async (req, res) => {
 		...printedCard,
 		userId:req.body.userId,
 	});
-
-	// clear card cache
-	deleteRedisKey("GetUserCardApi", req.body.userId);
 
 	res.json({
 		returnCode:1,

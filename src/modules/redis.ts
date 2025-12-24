@@ -8,8 +8,8 @@ const redisClient = await createClient({
 	.on("error", (err) => console.log("Redis Client Error", err))
 	.connect();
 
-export function deleteRedisKey(endpoint:string, identifier?:string) {
-	const pattern = `cache:chu3:*:${endpoint}*${identifier}*`;
+export function deleteRedisKey(game:string, endpoint:string, identifier:string) {
+	const pattern = `cache:${game}:*:${endpoint}*${identifier}*`;
 	let cursor = "0";
 
 	async function scanAndDelete() {

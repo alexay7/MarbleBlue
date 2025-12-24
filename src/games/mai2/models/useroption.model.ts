@@ -25,7 +25,7 @@ const mai2UserOptionSchema = new Schema<Mai2UserOptionType>({
 	dispBar: {type: Number, default: 1},
 	touchEffect: {type: Number, default: 1},
 	submonitorAnimation: {type: Number, default: 1},
-	submonitorAchive: {type: Number, default: 1},
+	submonitorAchieve: {type: Number, default: 1},
 	submonitorAppeal: {type: Number, default: 1},
 	matching: {type: Number, default: 0},
 	trackSkip: {type: Number, default: 0},

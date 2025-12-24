@@ -6,8 +6,11 @@ import xml.etree.ElementTree as ET
 chapters = []
 events = []
 
+
+ROOT_DIR = ""
+
 def export_events():
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Event.xml":
                 file_path = os.path.join(root, file)
@@ -48,7 +51,7 @@ def export_events():
         json.dump(events, f, ensure_ascii=False, indent=4)
 
 def export_chapters():
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Chapter.xml":
                 file_path = os.path.join(root, file)
@@ -95,7 +98,7 @@ def export_chapters():
 
 def export_music():
     music_list = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Music.xml":
                 file_path = os.path.join(root, file)
@@ -142,7 +145,7 @@ def export_music():
 
 def export_cards():
     card_list = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Card.xml":
                 file_path = os.path.join(root, file)
@@ -174,7 +177,7 @@ def export_cards():
 
 def export_trophies():
     trophy_list = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Trophy.xml":
                 file_path = os.path.join(root, file)
@@ -196,7 +199,7 @@ def export_dailybonus():
     daily_bonus_list = []
     reward_list = []
 
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Reward.xml":
                 file_path = os.path.join(root, file)
@@ -210,7 +213,7 @@ def export_dailybonus():
                 }
                 reward_list.append(reward)
 
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "DailyBonus.xml":
                 file_path = os.path.join(root, file)

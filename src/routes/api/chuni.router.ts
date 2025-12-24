@@ -35,7 +35,6 @@ import type {Chu3TeamType, Chu3UserTeamType} from "../../games/chu3/types/team.t
 import type {Chu3UserDataType} from "../../games/chu3/types/userdata.types.ts";
 import z from "zod";
 import {Chu3GameShopItem} from "../../games/chu3/models/gameshopitem.model.ts";
-import {deleteRedisKey} from "../../modules/redis.ts";
 
 const chuniApiRouter = Router({mergeParams: true});
 
@@ -282,9 +281,6 @@ chuniApiRouter.patch("/options",
 			{new: true, upsert: true}
 		);
 
-		// clear user options cache
-		deleteRedisKey("GetUserOptionApi", req.cardId);
-
 		res.json(updatedOptions);
 	}
 );
@@ -299,9 +295,6 @@ chuniApiRouter.patch("/userdata",
 			{$set: req.body},
 			{new: true, upsert: true}
 		);
-
-		// clear userdata cache
-		deleteRedisKey("GetUserDataApi", req.cardId);
 
 		res.json(updatedUserData);
 	}
@@ -320,9 +313,6 @@ chuniApiRouter.patch("/rivals",
 			{new: true, upsert: true}
 		);
 
-		// clear rivals cache
-		deleteRedisKey("GetUserRival", req.cardId);
-
 		res.json(updatedUserMisc);
 	}
 );
@@ -340,9 +330,6 @@ chuniApiRouter.patch("/chatsymbols",
 			{new: true, upsert: true}
 		);
 
-		// clear userteam cache
-		deleteRedisKey("GetUserSymbolChatSettingApi", req.cardId);
-
 		res.json(updatedUserMisc);
 	}
 );
@@ -359,9 +346,6 @@ chuniApiRouter.patch("/favoritemusic",
 			{$set: {favoriteMusicList: req.body.favoriteMusicList}},
 			{new: true, upsert: true}
 		);
-
-		// clear favorite music cache
-		deleteRedisKey("GetUserFavoriteItemApi", req.cardId);
 
 		res.json(updatedUserMisc);
 	}
@@ -381,9 +365,6 @@ chuniApiRouter.patch("/favoritechars",
 			{$set: {favoriteCharacterList: req.body.favoriteCharacterList}},
 			{new: true, upsert: true}
 		);
-
-		// clear favorite character cache
-		deleteRedisKey("GetUserFavoriteItemApi", req.cardId);
 
 		res.json(updatedUserMisc);
 	}
@@ -419,9 +400,6 @@ chuniApiRouter.post("/team/:teamId/join", async (req: Request, res) => {
 		teamId: teamId
 	});
 
-	// clear userteam cache
-	deleteRedisKey("GetUserTeamApi", req.cardId);
-
 	res.json(newMembership);
 });
 
@@ -452,9 +430,6 @@ chuniApiRouter.post("/team/create",
 
 		const highestTeam = await Chu3Team.findOne().sort({teamId: -1});
 		const nextTeamId = highestTeam ? highestTeam.teamId + 1 : 1;
-
-		// clear userteam cache
-		deleteRedisKey("GetUserTeamApi", req.cardId);
 
 		const newTeam = await Chu3Team.create({
 			teamId: nextTeamId,
@@ -487,9 +462,6 @@ chuniApiRouter.post("/team/leave", async (req: Request, res) => {
 		return res.status(400).json({message: "You are the owner of the team, you cannot leave. You can delete the team if you want to disband it."});
 	}
 
-	// clear userteam cache
-	deleteRedisKey("GetUserTeamApi", req.cardId);
-
 	await existingMembership.deleteOne();
 
 	res.json({message: "success"});
@@ -510,13 +482,6 @@ chuniApiRouter.post("/team/disband", async (req: Request, res) => {
 
 	if (team.ownerId.toString() !== req.currentUser?.id.toString()) {
 		return res.status(400).json({message: "You are not the owner of the team, only the owner can disband the team"});
-	}
-
-	// Delete all memberships
-	const oldMemberships = await Chu3UserTeam.find({teamId: team.teamId});
-	for (const membership of oldMemberships) {
-		// clear userteam cache
-		deleteRedisKey("GetUserTeamApi", membership.cardId);
 	}
 
 	await Chu3UserTeam.deleteMany({teamId: team.teamId});
@@ -561,6 +526,7 @@ chuniApiRouter.post("/shop/purchase/:articleId",
 		else if(shopItem.itemType==="称号") itemType = 3;
 		else if(shopItem.itemType==="マップアイコン") itemType = 8;
 		else if(shopItem.itemType==="システムボイス") itemType = 9;
+		else if(shopItem.shopId===4) itemType = 11; // Avatars
 
 		if(itemType===0 && shopItem.shopId!==3){
 			return res.status(400).json({message: "shop/invalid_item_type" });
@@ -595,9 +561,6 @@ chuniApiRouter.post("/shop/purchase/:articleId",
 		} else {
 			await Chu3UserData.updateOne({cardId: req.cardId, version: chuniAccount.version}, {$inc: {point: -shopItem.price}});
 		}
-
-		// clear items cache
-		deleteRedisKey("GetUserItemApi", req.cardId);
 
 		res.json({message: "success"});
 	});
@@ -693,9 +656,6 @@ chuniApiRouter.post("/music/import",
 		if (bulkOps.length > 0) {
 			await Chu3UserMusicDetail.bulkWrite(bulkOps);
 		}
-
-		// clear music cache
-		deleteRedisKey("GetUserMusicApi", req.cardId);
 
 		res.json({message: "Import complete", updated: bulkOps.length});
 	});

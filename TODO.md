@@ -1,4 +1,8 @@
 # MarbleBlue
+- [ ] Admitir diferentes códigos de tarjetas
+- [ ] Poner favicon
+- [ ] Revisar símbolos de chat en LV
+- [ ] Ranking Naive
 - [ ] Interfaz para 舞
 - [ ] Mejoras Interfaz de 撃
 - [ ] Mejoras Interfaz de 中
@@ -8,12 +12,12 @@
 
 
 # 中
+- [ ] Soporte para personajes favoritos
 - [~] Sistema de recomendaciones por recientes (FALTA HACER UN ALGORITMO PARA RECOMENDAR CANCIONES)
 - [ ] Cron para reiniciar equipos mensualmente
-- [ ] Soporte para personajes favoritos
 
 # 撃
-NO HAY TAREAS PENDIENTES
+- [ ] Arreglar misiones semanales
 
 # 舞
 NO HAY TAREAS PENDIENTES

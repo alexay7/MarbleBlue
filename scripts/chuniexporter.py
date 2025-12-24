@@ -6,8 +6,10 @@ events = []
 presets = []
 bonuses = []
 
+ROOT_DIR = "."
+
 def export_events():
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Event.xml":
                 file_path = os.path.join(root, file)
@@ -27,7 +29,7 @@ def export_events():
         json.dump(events, f, ensure_ascii=False, indent=4)
 
 def export_login_bonus():
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "LoginBonusPreset.xml":
                 file_path = os.path.join(root, file)
@@ -49,7 +51,7 @@ def export_login_bonus():
 
                 presets.append(preset)
 
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "LoginBonus.xml":
                 file_path = os.path.join(root, file)
@@ -80,7 +82,7 @@ def export_login_bonus():
 
 def export_trophies():
     trophies = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Trophy.xml":
                 file_path = os.path.join(root, file)
@@ -104,7 +106,7 @@ def export_trophies():
 
 def export_music():
     music = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Music.xml":
                 file_path = os.path.join(root, file)
@@ -153,7 +155,7 @@ def export_music():
 
 def export_characters():
     character_list = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Chara.xml":
                 file_path = os.path.join(root, file)
@@ -174,7 +176,7 @@ def export_characters():
 
 def export_maps():
     maps = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Map.xml":
                 file_path = os.path.join(root, file)
@@ -207,7 +209,7 @@ def export_maps():
 
 def export_cmissions():
     missions = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "CMission.xml":
                 file_path = os.path.join(root, file)
@@ -238,7 +240,7 @@ def export_cmissions():
 
 def export_skills():
     skills = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Skill.xml":
                 file_path = os.path.join(root, file)
@@ -258,7 +260,7 @@ def export_skills():
 
 def export_classes():
     classes = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Course.xml":
                 file_path = os.path.join(root, file)
@@ -288,7 +290,7 @@ def export_classes():
 
 def export_tickets():
     tickets = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Ticket.xml":
                 file_path = os.path.join(root, file)
@@ -308,7 +310,7 @@ def export_tickets():
 
 def export_chatsymbols():
     symbols = []
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "SymbolChat.xml":
                 file_path = os.path.join(root, file)
@@ -341,7 +343,7 @@ def export_shop_items():
         "characters":[],
         "nameplates":[]
     }
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "Reward.xml":
                 file_path = os.path.join(root, file)
@@ -359,7 +361,7 @@ def export_shop_items():
                     rewards["nameplates"].append(int(root_elem.find("substances").find("list").find("RewardSubstanceData").find("namePlate").find("namePlateName").find("id").text))
 
 
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk(ROOT_DIR):
         for file in files:
             if file == "MapIcon.xml":
                 file_path = os.path.join(root, file)

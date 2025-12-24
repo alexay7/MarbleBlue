@@ -24,7 +24,7 @@ export type Mai2UserOptionType = {
     dispBar: number;
     touchEffect: number;
     submonitorAnimation: number;
-    submonitorAchive: number;
+    submonitorAchieve: number;
     submonitorAppeal: number;
     matching: number;
     trackSkip: number;

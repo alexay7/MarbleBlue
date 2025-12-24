@@ -26,7 +26,6 @@ import {Mai2GameChargeModel} from "../games/mai2/models/gamecharge.model.ts";
 import {Mai2UserMissionModel} from "../games/mai2/models/usermission.model.ts";
 import {Mai2UserCardModel} from "../games/mai2/models/usercard.model.ts";
 import {Mai2UserRegionModel} from "../games/mai2/models/userregion.model.ts";
-import {deleteRedisKey} from "../modules/redis.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -274,7 +273,10 @@ mai2Router.post("/Maimai2Servlet/GetUserPreviewApi", async (req, res) => {
 		...foundUserOptions,
 		userId: req.body.userId,
 		isLogin:false,
-		isInherit:false
+		isInherit:false,
+		dailyBonusDate: foundUserData.dailyBonusDate ? dayjs(foundUserData.dailyBonusDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+		lastPlayDate: foundUserData.lastPlayDate ? dayjs(foundUserData.lastPlayDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+		lastLoginDate: foundUserData.lastLoginDate ? dayjs(foundUserData.lastLoginDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
 	});
 });
 
@@ -295,7 +297,16 @@ mai2Router.post("/Maimai2Servlet/GetUserDataApi", async (req, res) => {
 
 	res.json({
 		userId: req.body.userId,
-		userData: foundUserData
+		userData: {
+			...foundUserData,
+			eventWatchedDate: foundUserData.eventWatchedDate ? dayjs(foundUserData.eventWatchedDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+			lastLoginDate: foundUserData.lastLoginDate ? dayjs(foundUserData.lastLoginDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+			lastPlayDate: foundUserData.lastPlayDate ? dayjs(foundUserData.lastPlayDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+			firstPlayDate: foundUserData.firstPlayDate ? dayjs(foundUserData.firstPlayDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+			dailyBonusDate: foundUserData.dailyBonusDate ? dayjs(foundUserData.dailyBonusDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+			dailyCourseBonusDate: foundUserData.dailyCourseBonusDate ? dayjs(foundUserData.dailyCourseBonusDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00",
+			lastTrialPlayDate: foundUserData.lastTrialPlayDate ? dayjs(foundUserData.lastTrialPlayDate).format("YYYY-MM-DD HH:mm:ss") : "0000-00-00 00:00:00"
+		}
 	});
 });
 
@@ -571,11 +582,13 @@ mai2Router.post("/Maimai2Servlet/GetUserMissionDataApi", async (req:Request, res
 
 	const foundMissions = await Mai2UserMissionModel.find({userId: req.body.userId}).lean();
 
+	const userData = await Mai2UserDataModel.findOne({userId: req.body.userId}).lean();
+
 	res.json({
 		userId: req.body.userId,
 		userWeeklyData:{
-			lastLoginWeek:"",
-			beforeLoginWeek:"",
+			lastLoginWeek: userData ? dayjs(userData.lastLoginDate).startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
+			beforeLoginWeek: userData ? dayjs(userData.lastLoginDate).subtract(1, "week").startOf("week").format("YYYY-MM-DD HH:mm:ss") : "",
 			friendBonusFlag:false
 		},
 		userMissionDataList: foundMissions
@@ -844,12 +857,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userData && body.upsertUserAll.userData.length>0) {
-		// clear userdata cache
-		deleteRedisKey("GetUserDataApi", body.userId);
-		deleteRedisKey("CMGetUserDataApi", body.userId);
-		deleteRedisKey("GetUserPreviewApi", body.userId);
-		deleteRedisKey("CMGetUserPreviewApi", body.userId);
-
 		const newUserData = body.upsertUserAll.userData[0]!;
 
 		newUserData.userId = body.userId;
@@ -866,9 +873,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userExtend && body.upsertUserAll.userExtend.length>0) {
-		// clear userextend cache
-		deleteRedisKey("GetUserExtendApi", body.userId);
-
 		const newUserExtend = body.upsertUserAll.userExtend[0]!;
 
 		newUserExtend.userId = body.userId;
@@ -877,9 +881,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userOption && body.upsertUserAll.userOption.length>0) {
-		// clear useroption cache
-		deleteRedisKey("GetUserOptionApi", body.userId);
-
 		const newUserGameOption = body.upsertUserAll.userOption[0]!;
 
 		newUserGameOption.userId = body.userId;
@@ -888,9 +889,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userRatingList && body.upsertUserAll.userRatingList.length>0) {
-		// clear userrating cache
-		deleteRedisKey("GetUserRatingApi", body.userId);
-
 		const newUserRating = body.upsertUserAll.userRatingList[0]!;
 
 		newUserRating.userId = body.userId;
@@ -899,10 +897,7 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userActivityList && body.upsertUserAll.userActivityList.length>0) {
-		// clear useractivity cache
-		deleteRedisKey("GetUserActivityApi", body.userId);
-
-		const newUserActivity = body.upsertUserAll.userRatingList[0]!;
+		const newUserActivity = body.upsertUserAll.userActivityList[0]!;
 
 		newUserActivity.userId = body.userId;
 
@@ -910,10 +905,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userCharacterList && body.upsertUserAll.userCharacterList.length>0) {
-		// clear usercharacter cache
-		deleteRedisKey("GetUserCharacterApi", body.userId);
-		deleteRedisKey("CMGetUserCharacterApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userCharacterList.map(char => {
 			char.userId = body.userId;
 			return {
@@ -929,9 +920,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userMissionDataList && body.upsertUserAll.userMissionDataList.length>0) {
-		// clear usermissiondata cache
-		deleteRedisKey("GetUserMissionDataApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMissionDataList.map(mission => {
 			mission.userId = body.userId;
 			return {
@@ -947,15 +935,11 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userItemList && body.upsertUserAll.userItemList.length>0) {
-		// clear useritem cache
-		deleteRedisKey("GetUserItemApi", body.userId);
-		deleteRedisKey("CMGetUserItemApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userItemList.map(item => {
 			item.userId = body.userId;
 			return {
 				updateOne: {
-					filter: { userId: body.userId, itemId: item.itemId },
+					filter: { userId: body.userId, itemId: item.itemId, itemKind: item.itemKind },
 					update: { $set: item },
 					upsert: true
 				}
@@ -966,9 +950,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userLoginBonusList && body.upsertUserAll.userLoginBonusList.length>0) {
-		// clear userloginbonus cache
-		deleteRedisKey("GetUserLoginBonusApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userLoginBonusList.map(bonus => {
 			bonus.userId = body.userId;
 			return {
@@ -984,9 +965,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userMapList && body.upsertUserAll.userMapList.length>0) {
-		// clear usermap cache
-		deleteRedisKey("GetUserMapApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMapList.map(map => {
 			map.userId = body.userId;
 			return {
@@ -1002,9 +980,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userMusicDetailList && body.upsertUserAll.userMusicDetailList.length>0) {
-		// clear usermusicdetail cache
-		deleteRedisKey("GetUserMusicApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userMusicDetailList.map(music => {
 			music.userId = body.userId;
 			return {
@@ -1020,9 +995,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userCourseList && body.upsertUserAll.userCourseList.length>0) {
-		// clear usercourse cache
-		deleteRedisKey("GetUserCourseApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userCourseList.map(course => {
 			course.userId = body.userId;
 			course.lastPlayDate = course.lastPlayDate ? dayjs(course.lastPlayDate).toDate() : null;
@@ -1042,9 +1014,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userFavoriteList && body.upsertUserAll.userFavoriteList.length>0) {
-		// clear userfavorite cache
-		deleteRedisKey("GetUserFavoriteApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userFavoriteList.map(fav => {
 			fav.userId = body.userId;
 			return {
@@ -1060,9 +1029,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userFriendSeasonRankingList && body.upsertUserAll.userFriendSeasonRankingList.length>0) {
-		// clear userfriendseasonranking cache
-		deleteRedisKey("GetUserFriendSeasonRankingApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userFriendSeasonRankingList.map(rank => {
 			rank.userId = body.userId;
 			rank.recordDate = dayjs(rank.recordDate).toDate();
@@ -1079,9 +1045,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userKaleidxScopeList && body.upsertUserAll.userKaleidxScopeList.length>0) {
-		// clear userkaleidxscope cache
-		deleteRedisKey("GetUserKaleidxScopeApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userKaleidxScopeList.map(scope => {
 			scope.userId = body.userId;
 			scope.clearDate = scope.clearDate ? dayjs(scope.clearDate).toDate() : null;
@@ -1101,9 +1064,6 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 	}
 
 	if (body.upsertUserAll.userIntimateList && body.upsertUserAll.userIntimateList.length>0) {
-		// clear userintimate cache
-		deleteRedisKey("GetUserIntimateApi", body.userId);
-
 		const bulkOps = body.upsertUserAll.userIntimateList.map(intimate => {
 			intimate.userId = body.userId;
 			return {
@@ -1148,6 +1108,9 @@ const noOpFunction:RequestHandler = (req, res)=> {
 
 // Endpoints without any operation, just return 200 OK with minimal data
 const noOpEndpoints = [
+	"CreateTokenApi",
+	"DeleteTokenApi",
+	"RemoveTokenApi",
 	"UpsertClientSettingApi",
 	"UpsertClientTestmodeApi",
 	"Ping",
