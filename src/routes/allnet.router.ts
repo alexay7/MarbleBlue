@@ -30,7 +30,7 @@ function getGameUri(here:string, port:string, gameId:string, ver:string, session
 }
 
 allNetRouter.post("/servlet/PowerOn", async (req, res) => {
-	let here = req.header("AllNet-Forwarded-From") || config.ALLNET_HOST;
+	const here = req.header("AllNet-Forwarded-From") || config.ALLNET_HOST;
 
 	const reqMap = decodeAllNet(req.body);
 

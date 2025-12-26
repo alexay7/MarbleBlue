@@ -45,6 +45,7 @@ export type GekiUserDataType = {
     playerRating:number;
     highestRating:number;
     newPlayerRating:number;
+    naiveRating:number;
     newHighestRating:number;
     battlePoint:number;
     bestBattlePoint:number;

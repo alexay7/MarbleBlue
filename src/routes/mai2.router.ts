@@ -26,7 +26,7 @@ import {Mai2GameChargeModel} from "../games/mai2/models/gamecharge.model.ts";
 import {Mai2UserMissionModel} from "../games/mai2/models/usermission.model.ts";
 import {Mai2UserCardModel} from "../games/mai2/models/usercard.model.ts";
 import {Mai2UserRegionModel} from "../games/mai2/models/userregion.model.ts";
-import {getThisWeeksCategoryRotation} from "../utils/mai.ts";
+import {calculatePlayerNaiveRating, getThisWeeksCategoryRotation} from "../utils/mai.ts";
 import type {Mai2GameEventType} from "../games/mai2/types/gameevent.types.ts";
 import {Types} from "mongoose";
 
@@ -702,7 +702,7 @@ mai2Router.post("/Maimai2Servlet/GetUserCircleDataApi", async (req:Request, res)
 			userId: req.body.userId,
 			userName: "A",
 			rank:1,
-			point:7777
+			point:Math.floor(Math.random()*10000),
 		}]
 	});
 });
@@ -713,9 +713,6 @@ mai2Router.post("/Maimai2Servlet/GetUserCirclePointRankingApi", async (req, res)
 	res.json({
 		circleId: 1,
 		circleName: "CHUNI HISPANOS",
-		aggrDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-		lastMonthCircleRank: 2,
-		lastMonthPoint: 99999
 	});
 });
 
@@ -729,7 +726,7 @@ mai2Router.post("/Maimai2Servlet/GetUserCirclePointDataApi", async (req, res) =>
 			circleId: 1,
 			userName: "A",
 			aggDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-			point: 7777,
+			point: Math.floor(Math.random()*10000),
 			recordDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
 			rewardGet:true
 		}]
@@ -744,12 +741,12 @@ mai2Router.post("/Maimai2Servlet/GetUserFestaApi", async (req, res) => {
 			eventId:250926121,
 			circleId:1,
 			festaSideId:1,
-			circleTotalFestaPoint:9999,
-			currentTotalFestaPoint: 200000,
+			circleTotalFestaPoint:Math.floor(Math.random()*50000),
+			currentTotalFestaPoint: Math.floor(Math.random()*500000),
 			circleRankInFestaSide: 1,
 			circleRecordDate: dayjs().format("YYYY-MM-DD HH:mm:ss"),
 			isDailyBonus:false,
-			participationRewardGet:false,
+			participationRewardGet:true,
 			receivedRewardBorder:0
 		},
 		userResultFestaData:{
@@ -760,7 +757,7 @@ mai2Router.post("/Maimai2Servlet/GetUserFestaApi", async (req, res) => {
 			circleRankInFestaSide: 1,
 			receivedRewardBorder:0,
 			circleTotalFestaPoint:200000,
-			resultRewardGet:false
+			resultRewardGet:true
 		}
 	});
 });
@@ -859,7 +856,7 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 
 	const version = parseInt(req.headers["gameVersion"] as string) || 0;
 
-	if(req.body.userId === 281582350893057) {
+	if(req.body.userId === 281582350893057 || req.body.userId === "282724812193793") {
 		//     Guest account, do nothing
 		return res.json({
 			"returnCode": 1,
@@ -879,6 +876,7 @@ mai2Router.post("/Maimai2Servlet/UpsertUserAllApi", async (req:Request, res) => 
 		newUserData.dailyBonusDate = newUserData.dailyBonusDate ? dayjs(newUserData.dailyBonusDate).toDate() :null;
 		newUserData.dailyCourseBonusDate = newUserData.dailyCourseBonusDate ? dayjs(newUserData.dailyCourseBonusDate).toDate() :null;
 		newUserData.lastTrialPlayDate = newUserData.lastTrialPlayDate ? dayjs(newUserData.lastTrialPlayDate).toDate() :null;
+		newUserData.naiveRating = await calculatePlayerNaiveRating(body.userId);
 
 		await Mai2UserDataModel.findOneAndReplace({userId: body.userId, version}, newUserData, {upsert: true});
 	}

@@ -21,6 +21,7 @@ const gekiUserDataSchema = new Schema<GekiUserDataType>({
 	shizukuCount: { type: Number},
 	playerRating: { type: Number},
 	highestRating: { type: Number},
+	naiveRating: { type: Number},
 	newPlayerRating: { type: Number},
 	newHighestRating: { type: Number},
 	battlePoint: { type: Number},

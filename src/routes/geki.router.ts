@@ -33,6 +33,7 @@ import {GekiUserRatingLog} from "../games/geki/models/userratinglog.model.ts";
 import {GekiUserRegion} from "../games/geki/models/userregion.model.ts";
 import {GekiGameEvent} from "../games/geki/models/gameevent.model.ts";
 import {getGekiPBs} from "../utils/kt.ts";
+import {calculatePlayerNaiveRating} from "../utils/geki.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -825,6 +826,9 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 		newUserData.cmEventWatchedDate = dayjs(newUserData.cmEventWatchedDate).toDate();
 		newUserData.firstPlayDate = dayjs(newUserData.firstPlayDate).toDate();
 		newUserData.lastPlayDate = dayjs(newUserData.lastPlayDate).toDate();
+		if(body.upsertUserAll.userPlaylogList.length>0){
+			newUserData.naiveRating = await calculatePlayerNaiveRating(body.userId);
+		}
 
 		await GekiUserData.findOneAndReplace({userId: body.userId, version}, newUserData, {upsert: true});
 	}

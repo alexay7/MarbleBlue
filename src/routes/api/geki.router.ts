@@ -22,6 +22,7 @@ import {customValidateRequest} from "../../utils/zod.ts";
 import {UpdateGekiUserDataDto, UpdateGekiUserOptionsDto, UpdateGekiUserRivalsDto} from "../../dto/geki.dto.ts";
 import {GekiGameLoginBonus} from "../../games/geki/models/gameloginbonus.model.ts";
 import {GekiUserLoginBonus} from "../../games/geki/models/userloginbonus.model.ts";
+import z from "zod";
 
 const gekiApiRouter = Router({mergeParams:true});
 
@@ -228,14 +229,20 @@ gekiApiRouter.get("/cards", async (req, res) => {
 	res.json(cards);
 });
 
-gekiApiRouter.get("/ranking", async (req: Request, res) => {
-	const topPlayers = await GekiUserData.find()
-		.sort({newPlayerRating: -1})
-		.limit(25)
-		.select({userName:1, newPlayerRating:1});
+gekiApiRouter.get("/ranking",
+	customValidateRequest({
+		query: z.object({
+			type: z.enum(["new", "naive"]).default("new"),
+		})
+	}),
+	async (req: Request, res) => {
+		const topPlayers = await GekiUserData.find()
+			.sort(req.query.type === "new" ? {newPlayerRating:-1} : {naiveRating:-1})
+			.limit(25)
+			.select({userName:1, newPlayerRating: req.query.type === "new" ? "$newPlayerRating" : "$naiveRating"});
 
-	res.json(topPlayers);
-});
+		res.json(topPlayers);
+	});
 
 gekiApiRouter.get("/loginbonus", async (req, res) => {
 	const type = req.query.type === "special" ? {bonusId:{$ne:100}} : {bonusId:100};

@@ -13,7 +13,7 @@ import {Chu3UserActivity} from "../games/chu3/models/useractivity.model.ts";
 import {Chu3UserMisc} from "../games/chu3/models/usermisc.model.ts";
 import {Chu3UserPlaylog} from "../games/chu3/models/userplaylog.model.ts";
 import {Chu3UserTeam} from "../games/chu3/models/userteam.model.ts";
-import {calculateTeamEmblem, chu3ToUtf8} from "../utils/chu3.ts";
+import {calculatePlayerNaiveRating, calculateTeamEmblem, chu3ToUtf8} from "../utils/chu3.ts";
 import type {Chu3TeamType, Chu3UserTeamType} from "../games/chu3/types/team.types.ts";
 import {Chu3UserMapArea} from "../games/chu3/models/usermaparea.model.ts";
 import {log} from "../utils/general.ts";
@@ -1207,6 +1207,7 @@ chu3Router.post("/ChuniServlet/UpsertUserAllApi", async (req: Request, res) => {
 		newUserData.eventWatchedDate = dayjs(newUserData.eventWatchedDate, "YYYY-MM-DD HH:mm:ss").toDate();
 		newUserData.firstPlayDate = dayjs(newUserData.firstPlayDate, "YYYY-MM-DD HH:mm:ss").toDate();
 		newUserData.ppoint = (body.upsertUserAll.userPlaylogList?.length||0) * 2 + (oldUserData?.ppoint || 0);
+		newUserData.naiveRating = await calculatePlayerNaiveRating(body.userId);
 
 		await Chu3UserData.findOneAndReplace({cardId: body.userId, version}, newUserData, {upsert: true});
 	}

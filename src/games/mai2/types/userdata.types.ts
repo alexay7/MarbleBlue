@@ -35,6 +35,7 @@ export type Mai2UserDataType = {
     totalAwake: number;
     gradeRating: number;
     musicRating: number;
+    naiveRating: number;
     playerRating: number;
     highestRating: number;
     gradeRank: number;

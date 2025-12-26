@@ -57,6 +57,9 @@ export type Chu3UserDataType = {
     // Rating
     playerRating: number;
 
+    // Naive Rating
+    naiveRating: number;
+
     // Rating B30
     highestRating: number;
 

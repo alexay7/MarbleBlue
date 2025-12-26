@@ -21,6 +21,7 @@ const mai2UserDataSchema = new Schema<Mai2UserDataType>({
 	totalAwake: {type: Number},
 	gradeRating: {type: Number},
 	musicRating: {type: Number},
+	naiveRating: {type: Number},
 	playerRating: {type: Number},
 	highestRating: {type: Number},
 	gradeRank: {type: Number},

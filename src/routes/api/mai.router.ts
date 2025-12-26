@@ -22,7 +22,7 @@ import {Types} from "mongoose";
 const maiApiRouter = Router({mergeParams: true});
 
 maiApiRouter.get("/userdata", async (req: Request, res) => {
-	const foundUserData = await Mai2UserDataModel.findOne({userId: req.cardId}).sort({version: -1});
+	const foundUserData = await Mai2UserDataModel.find({userId: req.cardId}).sort({version: -1});
 
 	res.json(foundUserData);
 });
@@ -134,15 +134,21 @@ maiApiRouter.get("/usercharacters", async (req: Request, res) => {
 	res.json(userCharacters);
 });
 
-maiApiRouter.get("/ranking", async (req: Request, res) => {
-	const topPlayers = await Mai2UserDataModel.aggregate()
-		.group({_id: "$userId", rating: {$max: "$playerRating"}, userName: {$first: "$userName"}})
-		.sort({playerRating: -1})
-		.limit(25)
-		.project({userName: 1, playerRating: "$rating", _id: 0});
+maiApiRouter.get("/ranking",
+	customValidateRequest({
+		query: z.object({
+			type: z.enum(["new", "naive"]).default("new"),
+		})
+	}),
+	async (req: Request, res) => {
+		const topPlayers = await Mai2UserDataModel.aggregate()
+			.group({_id: "$userId", rating: {$max: req.query.type === "new" ? "$playerRating" : "$naiveRating"}, userName: {$first: "$userName"}})
+			.sort({rating: -1})
+			.limit(25)
+			.project({userName: 1, playerRating: "$rating", _id: 0});
 
-	res.json(topPlayers);
-});
+		res.json(topPlayers);
+	});
 
 maiApiRouter.get("/useractivity", async (req: Request, res) => {
 	const userActivity = await Mai2UserActivityModel.findOne({userId: req.cardId});

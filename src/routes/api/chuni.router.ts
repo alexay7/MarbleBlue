@@ -40,7 +40,7 @@ const chuniApiRouter = Router({mergeParams: true});
 
 
 chuniApiRouter.get("/userdata", async (req: Request, res) => {
-	const foundUserData = await Chu3UserData.findOne({cardId: req.cardId}).sort({version: -1});
+	const foundUserData = await Chu3UserData.find({cardId: req.cardId}).sort({version: -1});
 
 	res.json(foundUserData);
 });
@@ -247,14 +247,20 @@ chuniApiRouter.get("/teams", async (req: Request, res) => {
 	res.json(teams);
 });
 
-chuniApiRouter.get("/ranking", async (req: Request, res) => {
-	const topPlayers = await Chu3UserData.find({version:18})
-		.sort({playerRating: -1})
-		.limit(25)
-		.select({userName:1, playerRating:1});
+chuniApiRouter.get("/ranking",
+	customValidateRequest({
+		query: z.object({
+			type: z.enum(["new", "naive"]).default("new"),
+		})
+	}),
+	async (req, res) => {
+		const topPlayers = await Chu3UserData.find({version:18})
+			.sort(req.query.type === "new" ? {playerRating: -1} : {naiveRating: -1})
+			.limit(25)
+			.select({userName:1, playerRating: req.query.type === "new" ? "$playerRating" : "$naiveRating"});
 
-	res.json(topPlayers);
-});
+		res.json(topPlayers);
+	});
 
 chuniApiRouter.get("/shop/:shopId",
 	customValidateRequest({

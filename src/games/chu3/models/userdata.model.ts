@@ -18,6 +18,7 @@ const chu3UserDataSchema = new Schema<Chu3UserDataType>({
 	playCount: { type: Number},
 	multiPlayCount: { type: Number},
 	playerRating: { type: Number},
+	naiveRating: { type: Number},
 	highestRating: { type: Number},
 	nameplateId: { type: Number},
 	frameId: { type: Number},
