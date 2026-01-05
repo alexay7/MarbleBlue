@@ -29,15 +29,23 @@ export const userService = {
 				foreignField: "userId",
 				as: "mai2"
 			})
+			.lookup({
+				from: "sdvxuserdatas",
+				localField: "extId",
+				foreignField: "cardId",
+				as: "sdvx"
+			})
 			.addFields({
 				hasPlayedChuni: { $gt: [ { $size: "$chuni" }, 0 ] },
 				hasPlayedGeki: { $gt: [ { $size: "$geki" }, 0 ] },
-				hasPlayedMai2: { $gt: [ { $size: "$mai2" }, 0 ] }
+				hasPlayedMai2: { $gt: [ { $size: "$mai2" }, 0 ] },
+				hasPlayedSdvx: { $gt: [ { $size: "$sdvx" }, 0 ] }
 			})
 			.project({
 				chuni:0,
 				geki:0,
-				mai:0
+				mai2:0,
+				sdvx:0
 			});
 
 		return res.json(foundCards);

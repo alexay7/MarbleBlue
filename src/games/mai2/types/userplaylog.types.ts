@@ -24,13 +24,13 @@ export type Mai2UserPlaylogType = {
     vsUserGradeRank:number;
     vsRank:number;
     playerNum:number;
-    playedUserId1:bigint;
+    playedUserId1:string;
     playedUserName1:string;
     playedMusicLevel1:number;
-    playedUserId2:bigint;
+    playedUserId2:string;
     playedUserName2:string;
     playedMusicLevel2:number;
-    playedUserId3:bigint;
+    playedUserId3:string;
     playedUserName3:string;
     playedMusicLevel3:number;
     characterId1:number;

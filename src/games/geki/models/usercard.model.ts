@@ -20,7 +20,7 @@ const gekiUserCardSchema = new Schema<GekiUserCardType>({
 	skillId: {type: Number, default: 0},
 	isAcquired: {type: Boolean, default: false},
 	created: {type: Date, default: Date.now},
-});
+}, {suppressReservedKeysWarning:true});
 
 gekiUserCardSchema.index({userId: 1}, {unique: false});
 gekiUserCardSchema.index({userId: 1, cardId: 1}, {unique: true});

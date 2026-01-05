@@ -21,6 +21,10 @@ import cors from "cors";
 import {toNodeHandler} from "better-auth/node";
 import {auth} from "./utils/auth.ts";
 import {redisClient} from "./modules/redis.ts";
+import sdvxRouter from "./routes/sdvx.router.ts";
+import { parseString} from "xml2js";
+import {to_xml} from "@kamyu/kbinxml";
+import {decodeKNMXML, encodeKNMXML} from "./utils/sdvx.ts";
 
 // JSON
 declare global {
@@ -79,6 +83,85 @@ const gameEndpointMiddleware: RequestHandler = async (req, res, next) => {
 	next();
 };
 
+const KNMEndpointMiddleware: RequestHandler = (req, res, next) => {
+	log("gamePath", req.originalUrl);
+
+	const bodyChunks: Uint8Array[] = [];
+	req.on("data", (chunk) => {
+		bodyChunks.push(chunk);
+	});
+
+	req.on("end", () => {
+		const realBody = Buffer.concat(bodyChunks);
+
+		const xeamInfo = req.headers["x-eamuse-info"];
+
+		if(xeamInfo) {
+			const [, hexTime, hexPrng] = (xeamInfo as string).split("-");
+
+			const compressed = req.header("x-compress") || "none";
+
+			if (bodyChunks.length > 0) {
+				const decodedXml = decodeKNMXML(realBody.toString("base64"), compressed, hexTime as string, hexPrng as string);
+
+				req.body = {};
+				parseString(decodedXml, {explicitArray: false, explicitRoot: false}, (err, result) => {
+					if (err) {
+						log("error", `Error parsing XML: ${err.message}`);
+						req.body = {};
+					} else {
+						req.body = result;
+						log("game", `>>> ${JSON.stringify(req.body)}`);
+					}
+				});
+			}
+
+			return next();
+		}else{
+			if (bodyChunks.length > 0) {
+				const decodedXml = to_xml(realBody);
+
+				req.body = {};
+				parseString(decodedXml.data, {explicitArray: false, explicitRoot: false}, (err, result) => {
+					if (err) {
+						log("error", `Error parsing XML: ${err.message}`);
+						req.body = {};
+					} else {
+						req.body = result;
+						log("game", `>>> ${JSON.stringify(req.body)}`);
+					}
+				});
+			}
+
+			return next();
+		}
+	});
+
+	const originalSend = res.send.bind(res);
+
+	let sent = false;
+
+	res.send = (body) => {
+		if (sent) {
+			return originalSend(body);
+		}
+
+		if(!req.query.f?.toString().includes("common") && !req.query.f?.toString().includes("shop")) {
+			log("game", `<<< ${body}`);
+		}
+
+		const encrypt = !!req.header("x-eamuse-info");
+		const compress = req.header("x-compress") || "none";
+		res.setHeader("User-Agent", "EAMUSE.Httpac/1.0");
+
+		const encoded = encodeKNMXML(req, res, body, compress as string, encrypt);
+
+		sent = true;
+
+		return originalSend(encoded.data);
+	};
+};
+
 const allNetEndpointMiddleware: RequestHandler = (req, _, next) => {
 	log("allnet", req.originalUrl);
 	next();
@@ -130,14 +213,17 @@ mai2Router);
 app.use("/g/cmmai2/:ver/", json({limit: "50mb"}), gameEndpointMiddleware, mai2CMRouter);
 app.use("/g/card/", json({limit: "50mb"}), gameEndpointMiddleware, cmRouter);
 
+app.use("/g/sdvx", json({limit: "50mb"}), KNMEndpointMiddleware, sdvxRouter);
+
 app.use(cors({origin: ["http://localhost:5173", config.WEBUI_URL], credentials: true}));
 
-app.use("/api/auth/{*any}", toNodeHandler(auth));
+app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 app.use("/api", json({limit: "10mb"}), apiRouter, errorMiddleware);
 
 app.use(function (_, __, next) {
 	log("error", `404: ${_.originalUrl}`);
+
 	next(createHttpError(404, "Not Found"));
 });
 

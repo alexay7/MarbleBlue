@@ -65,6 +65,38 @@ type GekiUserPBsRes = {
     userRivalMusicDetailList:Omit<GekiUserMusicDetailType, "_id"|"userId"|"playCount"|"isLock"|"clearStatus"|"isStoryWatched">[]
 }
 
+type SdvxUserPB = {
+	chartID:string,
+	userID:number,
+	scoreData:{
+		score: number,
+		lamp: "FAILED" | "CLEAR" | "EXCESSIVE CLEAR" | "MAXXIVE CLEAR" | "ULTIMATE CHAIN" | "PERFECT ULTIMATE CHAIN",
+		optional:{
+			exScore?:number
+		},
+		grade:"D"|"C"|"B"|"A"|"A+"|"AA"|"AA+"|"AAA"|"AAA+"|"S"|"PUC",
+		enumIndexes:{
+			lamp:number;
+			grade:number;
+		}
+	}
+}
+
+type SdvxChart ={
+	chartID:string,
+	difficulty:"NOV"|"ADV"|"EXH"|"MXM"|"HVN"|"GRV"|"INF"|"ULT"|"VVD"|"XCD",
+	songID:number,
+}
+
+type SdvxUserPBRes = {
+	success:boolean,
+	description:string,
+	body:{
+		pbs:SdvxUserPB[],
+		charts:SdvxChart[]
+	}
+}
+
 function convertDifficulty(difficulty:"BASIC" | "ADVANCED" | "EXPERT" | "MASTER" | "ULTIMA"|"LUNATIC"):number{
 	switch(difficulty){
 	case "BASIC": return 0;
@@ -102,6 +134,54 @@ function convertGrade(grade:"SSS+"|"SSS"|"SS"|"S"|"AAA"|"AA"|"A"|"BBB"|"BB"|"B"|
 		return 2;
 	case "D":
 		return 1;
+	}
+}
+
+function convertSdvxClear(clear:SdvxUserPB["scoreData"]["lamp"]){
+	switch(clear){
+	case "FAILED": return 1;
+	case "CLEAR": return 2;
+	case "EXCESSIVE CLEAR": return 3;
+	case "MAXXIVE CLEAR": return 4;
+	case "ULTIMATE CHAIN": return 5;
+	case "PERFECT ULTIMATE CHAIN": return 6;
+	}
+}
+
+function convertSdvxGrade(grade:SdvxUserPB["scoreData"]["grade"]){
+	switch(grade){
+	case "D": return 1;
+	case "C": return 2;
+	case "B": return 3;
+	case "A": return 4;
+	case "A+": return 5;
+	case "AA": return 6;
+	case "AA+": return 7;
+	case "AAA": return 8;
+	case "AAA+": return 9;
+	case "S":
+	case "PUC": return 10;
+	}
+}
+
+function convertSdvxDifficulty(difficulty:SdvxChart["difficulty"]) {
+	switch (difficulty) {
+	case "NOV":
+		return 0;
+	case "ADV":
+		return 1;
+	case "EXH":
+		return 2;
+	case "INF":
+	case "GRV":
+	case "HVN":
+	case "VVD":
+	case "XCD":
+		return 3;
+	case "MXM":
+		return 4;
+	case "ULT":
+		return 5;
 	}
 }
 
@@ -196,6 +276,43 @@ export async function getChuniPBs(userAlias:string):Promise<Chu3UserPBsRes[]>{
 		}
 
 		return result;
+	}catch{
+		log("error", "kt", `Error al obtener los pbs de ${userAlias}`);
+		return [];
+	}
+}
+
+export async function getSdvxPBs(userAlias:string):Promise<string[][]>{
+	try{
+		const rivalScores = await axios.get<SdvxUserPBRes>(`${config.SCORES_SERVER}/api/v1/users/${userAlias}/games/sdvx/Single/pbs/all`);
+
+		const rivalScoresData = rivalScores.data as SdvxUserPBRes;
+		if (!rivalScoresData.success) return [];
+
+		const pbs = rivalScoresData.body.pbs;
+		const charts = rivalScoresData.body.charts;
+
+		return pbs.map(pb => {
+			const chart = charts.find(c => c.chartID === pb.chartID);
+
+			if (!chart) return [];
+
+			const musicId = chart.songID;
+			const difficulty = convertSdvxDifficulty(chart.difficulty);
+			const score = pb.scoreData.score;
+			const clear = convertSdvxClear(pb.scoreData.lamp);
+			const grade = convertSdvxGrade(pb.scoreData.grade);
+			const exScore = pb.scoreData.optional.exScore || 0;
+
+			return [
+				`${musicId}`,
+				`${difficulty}`,
+				`${score}`,
+				`${exScore}`,
+				`${clear}`,
+				`${grade}`
+			];
+		}) as string[][];
 	}catch{
 		log("error", "kt", `Error al obtener los pbs de ${userAlias}`);
 		return [];

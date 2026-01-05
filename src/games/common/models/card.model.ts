@@ -7,7 +7,8 @@ const cardSchema = new Schema<CardType>({
 	registerDate: { type: Date, required: true, default: Date.now },
 	lastLoginDate: { type: Date, required: false, default: null },
 	userId: { type: Schema.Types.ObjectId, ref: "User", required: false, default: null },
-	status: { type: String, enum: ["good", "banned"], required: true, default: "good" }
+	status: { type: String, enum: ["good", "banned"], required: true, default: "good" },
+	pin: { type: String, required: false },
 });
 
 cardSchema.index({userId: 1});

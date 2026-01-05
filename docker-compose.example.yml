@@ -19,6 +19,9 @@ services:
       - BETTER_AUTH_SECRET=
       - BETTER_AUTH_URL=
       - REDIS_URL=redis://redis:6379
+      - BMN_ENC_KEY=
+      - BMN_CARD_KEY=
+      - SERVER_IP=127.0.0.1
     depends_on:
       - db
   db:

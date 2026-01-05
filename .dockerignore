@@ -1,6 +1,9 @@
 node_modules
 
+.idea
+docs
 frontend
+scripts
 Yukiotoko
 
 .env

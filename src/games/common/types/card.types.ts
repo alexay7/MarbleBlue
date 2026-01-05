@@ -18,4 +18,7 @@ export type CardType = {
 
     // Estado de la tarjeta
     status: "good"|"banned"
+
+    // Pin de la tarjeta (opcional)
+    pin?: string;
 }

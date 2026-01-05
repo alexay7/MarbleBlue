@@ -15,7 +15,7 @@ const gekiUserCharacterSchema = new Schema<GekiUserCharacterType>({
 	intimateCountRewarded: {type: Number},
 	intimateCountDate: {type: Date},
 	isNew: {type: Boolean},
-});
+}, {suppressReservedKeysWarning:true});
 
 gekiUserCharacterSchema.index({userId: 1}, {unique: false});
 gekiUserCharacterSchema.index({userId: 1, characterId: 1}, {unique: true});
