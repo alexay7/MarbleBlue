@@ -779,11 +779,11 @@ mai2Router.post("/Maimai2Servlet/UploadUserPlaylogApi", async (req:Request, res)
         userPlaylog:Mai2UserPlaylogType;
     } = req.body;
 
-	const newPlaylog = {
+	const newPlaylog:Mai2UserPlaylogType = {
 		...body.userPlaylog,
 		userId: req.body.userId,
 		playDate: dayjs(body.userPlaylog.playDate).toDate(),
-		userPlayDate: dayjs(body.userPlaylog.userPlayDate).toDate(),
+		userPlayDate: dayjs(body.userPlaylog.userPlayDate).toDate()
 	};
 
 	await Mai2UserPlaylogModel.create(newPlaylog);
