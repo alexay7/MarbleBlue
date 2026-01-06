@@ -35,7 +35,7 @@ import type {SdvxPcbType} from "../games/sdvx/types/pcb.types.ts";
 import { SdvxGameEventModel } from "../games/sdvx/models/gameevent.model.ts";
 import {SdvxGameMusicModel} from "../games/sdvx/models/gamemusic.model.ts";
 import {SdvxGameCourseModel} from "../games/sdvx/models/gamecourse.model.ts";
-import {SdvxGameWeeklyMusicModel} from "../games/sdvx/models/gameweeklymusic.types.ts";
+import {SdvxGameWeeklyMusicModel} from "../games/sdvx/models/gameweeklymusic.model.ts";
 import type {LoungeRequestType} from "../games/sdvx/types/match.types.ts";
 import {SdvxMatchModel} from "../games/sdvx/models/match.model.ts";
 import {getWeekNumber} from "../utils/sdvx.ts";
@@ -750,7 +750,7 @@ async function loadUserData(req: UnkownRequest, res: Response) {
 			skill_level: xmlVar(userData.skillLevel, "s16"),
 			skill_base_id: xmlVar(userData.skillBaseId, "s16"),
 			skill_name_id: xmlVar(userData.skillNameId, "s16"),
-			skill_type: xmlVar(userData.skllType, "s16"),
+			skill_type: xmlVar(userData.skillType, "s16"),
 
 			play_count: xmlVar(userData.playCount, "u32"),
 			day_count: xmlVar(userData.dayCount, "u32"),

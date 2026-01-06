@@ -41,7 +41,7 @@ export type SdvxUserDataType = {
     skillLevel:string;
     skillBaseId:string;
     skillNameId:string;
-    skllType:string;
+    skillType:string;
 
     supportTeamId:string;
 

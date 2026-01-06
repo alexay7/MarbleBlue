@@ -40,7 +40,7 @@ const sdvxUserDataSchema = new Schema<SdvxUserDataType>({
 	skillLevel: {type: String},
 	skillBaseId: {type: String},
 	skillNameId: {type: String},
-	skllType: {type: String},
+	skillType: {type: String},
 
 	supportTeamId: {type: String},
 
