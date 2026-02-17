@@ -14,11 +14,12 @@ const sdvxGameArenaSchema = new Schema<SdvxGameArenaType>({
 	_id: {type: SchemaTypes.ObjectId, auto: true},
 
 	id:{type:Number, required:true},
+	version:{type:Number, required:true},
 	rule:{type:String, required:true},
 	rankMatchTarget:{type:String, required:true},
 	catalog:{type:[sdvxGameArenaItemSchema], required:true},
 });
 
-sdvxGameArenaSchema.index({id:1}, {unique:true});
+sdvxGameArenaSchema.index({id:1, version:1}, {unique:true});
 
 export const SdvxGameArenaModel =  mongoose.model<SdvxGameArenaType>("SdvxGameArena", sdvxGameArenaSchema);

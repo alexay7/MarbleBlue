@@ -6,6 +6,7 @@ const sdvxGameCourseSchema = new Schema<SdvxGameCourseType>({
 
 	id:{type:Number, required:true},
 	name:{type:String, required:true},
+	version:{type:Number},
 	seasonId:{type:Number},
 	seasonName:{type:String},
 	isNew:{type:String},
@@ -23,6 +24,6 @@ const sdvxGameCourseSchema = new Schema<SdvxGameCourseType>({
 			level:{type:String},
 		}]
 	},
-});
+}, {suppressReservedKeysWarning:true});
 
 export const SdvxGameCourseModel =  mongoose.model<SdvxGameCourseType>("SdvxGameCourse", sdvxGameCourseSchema);

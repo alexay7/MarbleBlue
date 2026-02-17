@@ -16,9 +16,9 @@ const sdvxUserMusicDetailSchema = new Schema<SdvxUserMusicDetailType>({
 	clearType: {type: Number, required: true},
 	scoreGrade: {type: Number, required: true},
 
-	btnRate: {type: Number},
-	longRate: {type: Number},
-	volRate: {type: Number},
+	btnRate: {type: Number, default:0},
+	longRate: {type: Number, default:0},
+	volRate: {type: Number, default:0},
 });
 
 sdvxUserMusicDetailSchema.index({cardId:1, version:1});

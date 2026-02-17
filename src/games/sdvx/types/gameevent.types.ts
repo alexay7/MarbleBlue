@@ -4,6 +4,7 @@ export type SdvxGameEventType = {
     _id: Types.ObjectId;
 
     id:number;
+    version:number;
     type:string;
     paramNum1:number;
     paramNum2:number;

@@ -2,6 +2,7 @@ import mongoose, {Schema} from "mongoose";
 import type {CardType} from "../types/card.types.ts";
 
 const cardSchema = new Schema<CardType>({
+	profileId: { type: String, required: true },
 	extId: { type: String, required: true},
 	accessCode: { type: String, required: true, unique: true },
 	registerDate: { type: Date, required: true, default: Date.now },

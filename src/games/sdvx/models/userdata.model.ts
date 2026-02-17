@@ -8,7 +8,7 @@ const sdvxUserDataSchema = new Schema<SdvxUserDataType>({
 	version: {type: Number, required: true},
 	lastPlayed: {type: Date, default: Date.now},
 	rivals: {type: [String], default:[]},
-	unlocCustoms: {type: Boolean, default:false},
+	unlockCustoms: {type: Boolean, default:false},
 	unlockCrew: {type: Boolean, default:false},
 	unlockAppeal: {type: Boolean, default:false},
 
@@ -42,9 +42,9 @@ const sdvxUserDataSchema = new Schema<SdvxUserDataType>({
 	skillNameId: {type: String},
 	skillType: {type: String},
 
-	supportTeamId: {type: String},
+	supportTeamId: {type: String, default:"0"},
 
-	additionalInfo: {type: {proTeamId:String}},
+	additionalInfo: {type: {proTeamId:String}, default: {proTeamId:"0"}, _id:false},
 
 	eaShop: {type: {packetBooster:Number, blockBooster:Number, blasterPassEnable:String, blasterPassLimitDate:String}},
 

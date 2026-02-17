@@ -86,6 +86,9 @@ type SdvxChart ={
 	chartID:string,
 	difficulty:"NOV"|"ADV"|"EXH"|"MXM"|"HVN"|"GRV"|"INF"|"ULT"|"VVD"|"XCD",
 	songID:number,
+	data:{
+		inGameId:number
+	}
 }
 
 type SdvxUserPBRes = {
@@ -142,9 +145,9 @@ function convertSdvxClear(clear:SdvxUserPB["scoreData"]["lamp"]){
 	case "FAILED": return 1;
 	case "CLEAR": return 2;
 	case "EXCESSIVE CLEAR": return 3;
-	case "MAXXIVE CLEAR": return 4;
 	case "ULTIMATE CHAIN": return 5;
 	case "PERFECT ULTIMATE CHAIN": return 6;
+	case "MAXXIVE CLEAR": return 4;
 	}
 }
 

@@ -3,3 +3,5 @@ export function generateExternalId(accessCode:string){
 
 	return accessCode.slice(-10, -5) + now.toString().slice(-4);
 }
+
+console.log(generateExternalId("6R7T4PHJWKRSFE17"));

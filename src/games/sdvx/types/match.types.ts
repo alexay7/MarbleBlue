@@ -7,7 +7,7 @@ export type SdvxMatchType = {
     createdAt: number;
     cVer:string;
     pNum:string;
-    pRest:string;
+    pRest:number;
     filter:string;
     mid:string;
     sec:string;
@@ -16,6 +16,7 @@ export type SdvxMatchType = {
     lip:string;
     claim:string;
     entryId:string;
+    lastUpdate: number;
 }
 
 export type MatchMakingRequestType = {

@@ -76,8 +76,9 @@ const gameEndpointMiddleware: RequestHandler = async (req, res, next) => {
 		const zipped = zlib.deflateSync(buffer);
 
 		res.setHeader("Content-Type", "application/octet-stream");
+		res.setHeader("Connection", "close");
 
-		return originalSend(zipped);
+		originalSend(zipped);
 	};
 
 	next();

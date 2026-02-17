@@ -8,7 +8,7 @@ export type SdvxUserDataType = {
     version:number;
     lastPlayed:Date;
     rivals:string[];
-    unlocCustoms: boolean;
+    unlockCustoms: boolean;
     unlockCrew: boolean;
     unlockAppeal: boolean;
 

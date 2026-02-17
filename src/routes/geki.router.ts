@@ -826,9 +826,7 @@ gekiRouter.post("/UpsertUserAllApi", async (req, res) => {
 		newUserData.cmEventWatchedDate = dayjs(newUserData.cmEventWatchedDate).toDate();
 		newUserData.firstPlayDate = dayjs(newUserData.firstPlayDate).toDate();
 		newUserData.lastPlayDate = dayjs(newUserData.lastPlayDate).toDate();
-		if(body.upsertUserAll.userPlaylogList.length>0){
-			newUserData.naiveRating = await calculatePlayerNaiveRating(body.userId);
-		}
+		newUserData.naiveRating = await calculatePlayerNaiveRating(body.userId, body.upsertUserAll.userPlaylogList);
 
 		await GekiUserData.findOneAndReplace({userId: body.userId, version}, newUserData, {upsert: true});
 	}

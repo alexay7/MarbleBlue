@@ -26,7 +26,7 @@ apiRouter.use("/game/:card/",
 		}
 
 		// Attach the found card to the request object for further use
-		req.cardId = foundCard.extId;
+		req.cardId = foundCard.profileId;
 
 		next();
 	},

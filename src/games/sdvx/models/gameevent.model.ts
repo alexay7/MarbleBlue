@@ -5,6 +5,7 @@ const sdvxGameEventSchema = new Schema<SdvxGameEventType>({
 	_id: {type: SchemaTypes.ObjectId, auto: true},
 
 	id:{type:Number, required:true},
+	version:{type:Number, required:true},
 	type:{type:String, required:true},
 	paramNum1:{type:Number},
 	paramNum2:{type:Number},
@@ -18,6 +19,6 @@ const sdvxGameEventSchema = new Schema<SdvxGameEventType>({
 	paramStr5:{type:String},
 });
 
-sdvxGameEventSchema.index({id:1, type:1}, {unique:true});
+sdvxGameEventSchema.index({id:1, type:1, version:1});
 
 export const SdvxGameEventModel =  mongoose.model<SdvxGameEventType>("SdvxGameEvent", sdvxGameEventSchema);

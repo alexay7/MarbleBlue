@@ -13,25 +13,25 @@ export const userService = {
 			.match({userId:new Types.ObjectId(req.currentUser!.id)})
 			.lookup({
 				from: "chu3userdatas",
-				localField: "extId",
+				localField: "profileId",
 				foreignField: "cardId",
 				as: "chuni"
 			})
 			.lookup({
 				from: "gekiuserdatas",
-				localField: "extId",
+				localField: "profileId",
 				foreignField: "userId",
 				as: "geki"
 			})
 			.lookup({
 				from: "mai2userdatas",
-				localField: "extId",
+				localField: "profileId",
 				foreignField: "userId",
 				as: "mai2"
 			})
 			.lookup({
 				from: "sdvxuserdatas",
-				localField: "extId",
+				localField: "profileId",
 				foreignField: "cardId",
 				as: "sdvx"
 			})

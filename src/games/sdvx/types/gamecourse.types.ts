@@ -4,6 +4,7 @@ export type SdvxGameCourseType = {
     _id: Types.ObjectId;
 
     id:number;
+    version:number;
     name:string;
     seasonId:number;
     seasonName:string;

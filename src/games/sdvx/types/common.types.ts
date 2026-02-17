@@ -20,7 +20,7 @@ export type SingleXmlVariableType<XmlVarType extends XmlVarTypes = XmlVarTypes> 
     }
 }
 
-export function xmlVar(value: string|number|undefined, type: XmlVarTypes): SingleXmlVariableType|string {
+export function xmlVar(value: string|number|boolean|undefined, type: XmlVarTypes): SingleXmlVariableType|string {
 	if(value===undefined){
 		return "";
 	}

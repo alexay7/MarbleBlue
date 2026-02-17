@@ -1,5 +1,7 @@
 import {GekiGameMusic} from "../games/geki/models/gamemusic.model.ts";
 import {GekiUserMusicDetail} from "../games/geki/models/usermusicdetail.model.ts";
+import type {GekiUserPlaylogType} from "../games/geki/types/userplaylog.types.ts";
+import {Types} from "mongoose";
 
 function calculateTechRating(songConstant: number, score: number, fullBell: boolean, lamp: "FC" | "AB" | "ABP" | "CLEAR") {
 	let rating = songConstant;
@@ -26,9 +28,36 @@ function calculateTechRating(songConstant: number, score: number, fullBell: bool
 	return Math.trunc(rating * 1000) / 1000;
 }
 
-export async function calculatePlayerNaiveRating(userId: string){
+export async function calculatePlayerNaiveRating(userId: string, newSongs:GekiUserPlaylogType[]){
 	const songData = await GekiGameMusic.find({});
-	const bestScores = await GekiUserMusicDetail.find({userId: userId});
+	const bestScores = await GekiUserMusicDetail.find({userId: userId}).lean();
+
+	// Update bestScores with newSongs data
+	newSongs.forEach(newSong => {
+		bestScores.push({
+			_id:new Types.ObjectId(),
+			__v:0,
+			userId: userId,
+			musicId: newSong.musicId,
+			level: newSong.level,
+			techScoreMax: newSong.techScore,
+			isFullCombo: newSong.isFullCombo,
+			isAllBreake: newSong.isAllBreak,
+			isFullBell: newSong.isFullBell,
+			playCount:1,
+			techScoreRank: newSong.techScoreRank,
+			battleScoreRank: newSong.battleScoreRank,
+			battleScoreMax: newSong.battleScore,
+			platinumScoreMax: newSong.platinumScore,
+			platinumScoreStar: newSong.platinumScoreStar,
+			maxComboCount: newSong.maxCombo,
+			maxOverKill: newSong.overDamage,
+			maxTeamOverKill: newSong.overDamage,
+			isLock: false,
+			clearStatus:newSong.clearStatus,
+			isStoryWatched:false
+		});
+	});
 
 	const scoreMap: Record<string, number> = {};
 	bestScores.forEach(scoreEntry => {

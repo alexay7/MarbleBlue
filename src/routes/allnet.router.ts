@@ -67,7 +67,8 @@ allNetRouter.post("/servlet/PowerOn", async (req, res) => {
 		"nickname":""
 	};
 
-	const now = new Date();
+	// Date in tokyo timezone
+	const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
 
 	if (formatVer.startsWith("2")){
 		respMap["year"] = now.getFullYear().toString();

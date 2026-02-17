@@ -36,10 +36,12 @@ import { SdvxGameEventModel } from "../games/sdvx/models/gameevent.model.ts";
 import {SdvxGameMusicModel} from "../games/sdvx/models/gamemusic.model.ts";
 import {SdvxGameCourseModel} from "../games/sdvx/models/gamecourse.model.ts";
 import {SdvxGameWeeklyMusicModel} from "../games/sdvx/models/gameweeklymusic.model.ts";
-import type {LoungeRequestType} from "../games/sdvx/types/match.types.ts";
+import type {LoungeRequestType, MatchMakingRequestType} from "../games/sdvx/types/match.types.ts";
 import {SdvxMatchModel} from "../games/sdvx/models/match.model.ts";
 import {getWeekNumber} from "../utils/sdvx.ts";
 import {encode} from "../utils/card.ts";
+import {generateExternalId} from "../utils/aime.ts";
+import {SdvxGameApigenModel} from "../games/sdvx/models/gameapigen.model.ts";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -114,7 +116,9 @@ sdvxRouter.post("/",
 		case "facility.get": return getFacilityData(req, res);
 		case "pcbevent.put": return noOp(req, res, "pcbevent");
 		case "dlstatus.progress": return noOp(req, res, "dlstatus");
-		case "game.sv6_log": return noOp(req, res, "game");
+		case "game.sv6_log":
+		case "game.sv7_log":
+			return noOp(req, res, "game");
 		case "eventlog.write": {
 			return res.json({
 				eventlog: {
@@ -148,11 +152,20 @@ sdvxRouter.post("/",
 				}
 			});
 		}
-		case "game.sv6_common": return getServerData(req, res, foundPcb);
+		case "game.sv6_common":
+			return getServerData(req, res, foundPcb, 6);
+		case "game.sv7_common":
+			return getServerData(req, res, foundPcb, 7);
 
-		case "game.sv6_hiscore": return getServerHiScores(req, res);
-		case "game.sv6_shop": return getShopData(req, res);
-		case "game.sv6_exception": return noOp(req, res, "game");
+		case "game.sv6_hiscore":
+		case "game.sv7_hiscore":
+			return getServerHiScores(req, res);
+		case "game.sv6_shop":
+		case "game.sv7_shop":
+			return getShopData(req, res);
+		case "game.sv6_exception":
+		case "game.sv7_exception":
+			return noOp(req, res, "game");
 
 		// COMPRUEBA SI UNA TARJETA ESTÁ REGISTRADA
 		case "cardmng.inquire": return checkCard(req, res);
@@ -177,32 +190,67 @@ sdvxRouter.post("/",
 
 
 		// REGISTRA EL NUEVO USUARIO ASOCIADO A LA TARJETA
-		case "game.sv6_new": return createUserData(req, res);
-		case "game.sv6_load": return loadUserData(req, res);
-		case "game.sv6_frozen": return noOp(req, res, "game");
-		case "game.sv6_load_m": return loadUserMusic(req, res);
-		case "game.sv6_load_r": return loadUserRivals(req, res);
-		case "game.sv6_lounge": return lounge(req, res);
-		case "game.sv6_play_s": {
+		case "game.sv6_new":
+			return createUserData(req, res, 6);
+		case "game.sv7_new":
+			return createUserData(req, res, 7);
+		case "game.sv6_load":
+			return loadUserData(req, res, 6);
+		case "game.sv7_load":
+			return loadUserData(req, res, 7);
+		case "game.sv6_frozen":
+		case "game.sv7_frozen":
+			return noOp(req, res, "game");
+		case "game.sv6_load_m":
+			return loadUserMusic(req, res, 6);
+		case "game.sv7_load_m":
+			return loadUserMusic(req, res, 7);
+		case "game.sv6_load_r":
+		case "game.sv7_load_r":
+			return loadUserRivals(req, res);
+		case "game.sv6_lounge":
+		case "game.sv7_lounge":
+			return lounge(req, res);
+		case "game.sv6_play_s":
+		case "game.sv7_play_s": {
 			return res.json({
 				game: {}
 			});
 		}
-		case "game.sv6_play_e": {
+		case "game.sv6_play_e":
+		case "game.sv7_play_e": {
 			return res.json({
 				game: {}
 			});
 		}
-		case "game.sv6_entry_s": return matchMaking(req, res);
-		case "game.sv6_save": return saveUserData(req, res);
-		case "game.sv6_save_m": return saveUserPlaylog(req, res);
-		case "game.sv6_save_e": return saveWeeklyMusic(req, res);
-		case "game.sv6_save_mega":{
+		case "game.sv6_entry_s":
+		case "game.sv7_entry_s":
+			return matchMaking(req, res);
+		case "game.sv6_entry_e":
+		case "game.sv7_entry_e": {
+			return noOp(req, res, "game");
+		}
+		case "game.sv6_save":
+		case "game.sv7_save":
+			return saveUserData(req, res);
+		case "game.sv6_save_m":
+			return saveUserPlaylog(req, res, 6);
+		case "game.sv7_save_m":
+			return saveUserPlaylog(req, res, 7);
+		case "game.sv6_save_e":
+			return saveWeeklyMusic(req, res, 6);
+		case "game.sv7_save_e":
+			return saveWeeklyMusic(req, res, 7);
+		case "game.sv6_save_mega":
+		case "game.sv7_save_mega":
+		{
 			return res.json({
 				game:{}
 			});
 		}
-		case "game.sv6_save_valgene": return giveValgenePrice(req, res);
+		case "game.sv6_save_valgene":
+		case "game.sv7_save_valgene":
+			return giveValgenePrice(req, res);
 
 		// COMPRUEBA EL BALANCE DEL USUARIO
 		case "eacoin.checkin": return checkCoinBalance(req, res);
@@ -277,7 +325,7 @@ function getFacilityData(req: UnkownRequest, res: Response) {
 				rtt: xmlVar("22", "u16"),
 			},
 			portfw:{
-				globalip: xmlVar((req.ip?.includes("192.168") ? config.SERVER_IP : req.headers["x-forwarded-for"] || req.socket.remoteAddress) as string, "ip4"),
+				globalip: xmlVar(req.header("X-Forwarded-For")||config.SERVER_IP, "ip4"),
 				globalport: xmlVar("5700", "u16"),
 				privateport: xmlVar("5700", "u16"),
 			},
@@ -383,7 +431,7 @@ function getShopData(req: UnkownRequest, res: Response) {
 	});
 }
 
-async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbType) {
+async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbType, version: number) {
 	const valGen = await SdvxGameValgenModel.find({});
 
 	const valGenItems = valGen.reduce((acc, vg) => {
@@ -398,14 +446,27 @@ async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbT
 		return [...acc, ...thisItems];
 	}, [] as {valgene_id: number, rarity: number, item_type: number, item_id: number}[]);
 
-	const arenaSeason = await SdvxGameArenaModel.findOne({id:pcbData.arenaSeason});
+	const apiGen = await SdvxGameApigenModel.find({version}).lean();
+
+	const apiGenItems = apiGen.reduce((acc, apigene) => {
+		const thisItems = apigene.catalog?.map(item => ({
+			apigene_id: apigene.id,
+			rarity: item.itemType === 23 ? 1 : 0,
+			item_type: item.itemType,
+			item_id: item.itemId
+		})) ?? [];
+
+		return [...acc, ...thisItems];
+	}, [] as {apigene_id: number, rarity: number, item_type: number, item_id: number}[]);
+
+	const arenaSeason = await SdvxGameArenaModel.findOne({id:pcbData.arenaSeason, version});
 
 	// 1 - server information, 3 - stamps, 6 - kac?, 17 - megamix?, 19 - complete stamps, 20 - tama, 22 - variant gate
-	const gameEvents = await SdvxGameEventModel.find({}).lean();
+	const gameEvents = await SdvxGameEventModel.find({version}).lean();
 
 	const gameMusic = await SdvxGameMusicModel.find({}).lean();
 
-	const gameCourses = await SdvxGameCourseModel.find({}).lean();
+	const gameCourses = await SdvxGameCourseModel.find({version}).lean();
 
 	const currentWeek = getWeekNumber(new Date());
 	let gameWeeklyMusic = await SdvxGameWeeklyMusicModel.find({weekId:currentWeek}).lean();
@@ -433,10 +494,34 @@ async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbT
 					item_id: xmlVar(item.item_id, "s32"),
 				}))
 			},
+			apigene:{
+				info: apiGen.map(api => ({
+					apigene_id: xmlVar(api.id, "s32"),
+					name: xmlVar(api.name, "str"),
+					name_english: xmlVar(api.nameEnglish ?? api.name, "str"),
+					common_rate: xmlVar(api.commonRate ?? 0, "s32"),
+					uncommon_rate: xmlVar(api.uncommonRate ?? 0, "s32"),
+					rare_rate: xmlVar(api.rareRate ?? 0, "s32"),
+					price: xmlVar(api.price ?? 0, "s32"),
+					no_duplicate: xmlVar(api.noDuplicate ?? false, "bool"),
+				})),
+				catalog: apiGenItems.map(item => ({
+					apigene_id: xmlVar(item.apigene_id, "s32"),
+					rarity: xmlVar(item.rarity, "s32"),
+					item_type: xmlVar(item.item_type, "s32"),
+					item_id: xmlVar(item.item_id, "s32"),
+				}))
+			},
 			arena: {
 				season:xmlVar(arenaSeason?.id, "s32"),
 				rule:xmlVar(arenaSeason?.rule, "s32"),
-				rank_match_target:xmlVar(arenaSeason?.rankMatchTarget, "s32"),
+				rank_match_target:{
+					$: {
+						"__type": "s32",
+						"__count":"3"
+					},
+					_: "0 1 2"
+				},
 				time_start:xmlVar(new Date("2000-01-01T00:00:00Z").getTime().toString(), "u64"),
 				time_end:xmlVar(new Date("2099-12-31T00:00:00Z").getTime().toString(), "u64"),
 				shop_start:xmlVar(new Date("2000-01-01T00:00:00Z").getTime().toString(), "u64"),
@@ -505,23 +590,27 @@ async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbT
 		}
 	};
 
-	const fixedFlags = [
-		"DEMOGAME_PLAY", "MATCHING_MODE", "MATCHING_MODE_FREE_IP", "LEVEL_LIMIT_EASING", "ACHIEVEMENT_ENABLE", "APICAGACHADRAW\t30", "TAMAADV_ENABLE", "VOLFORCE_ENABLE", "AKANAME_ENABLE", "PAUSE_ONLINEUPDATE", "CONTINUATION", "TENKAICHI_MODE", "QC_MODE", "KAC_MODE", "DISABLE_MONITOR_ID_CHECK", "FAVORITE_APPEALCARD_MAX\t200", "FAVORITE_MUSIC_MAX\t200", "STANDARD_UNLOCK_ENABLE", "APRIL_RAINBOW_LINE_ACTIVE", "KONAMI_50TH_LOGO", "PLAYERJUDGEADJ_ENABLE", "MIXID_INPUT_ENABLE", "DISP_PASELI_BANNER", "CHARACTER_IGNORE_DISABLE\\t122,123,131,139,140,143,149,160,162,163,164,167,170,174", "STAMP_IGNORE_DISABLE\\t273~312,773~820,993~1032,1245~1284,1469~1508,1585~1632,1633~1672,1737~1776,1777~1816,1897~1936", "SUBBG_IGNORE_DISABLE\\t166~185,281~346,369~381,419~438,464~482,515~552,595~616,660~673,714~727", "OMEGA_ENABLE\t1,2,3,4,5,6,7,8,9", "OMEGA_ARS_ENABLE", "HEXA_ENABLE\t1,2,3,4,5,6,7,8,9,10,11", "HEXA_OVERDRIVE_ENABLE\t8", "SKILL_ANALYZER_ABLE", "BLASTER_ABLE", "PREMIUM_TIME_ENABLE", "MEGAMIX_ENABLE", "ARENA_ENABLE", "ARENA_LOCAL_TO_ONLINE_ENABLE", "ARENA_ALTER_MODE_WINDOW_ENABLE", "ARENA_PASS_MATCH_WINDOW_ENABLE", "ARENA_VOTE_MODE_ENABLE", "ARENA_LOCAL_ULTIMATE_MATCH_ALWAYS", "MEGAMIX_BATTLE_MATCH_ENABLE", "DISABLED_MUSIC_IN_ARENA_ONLINE", "SINGLE_BATTLE_ENABLE", "GENERATOR_ABLE", "CREW_SELECT_ABLE", "VALGENE_ENABLE", "PLAYER_RADAR_ENABLE", "S_PUC_EFFECT_ENABLE", "FAVORITE_CREW_ENABLE", "SUPER_RANDOM_ACTIVE"
+	const sv6FixedFlags = [
+		"DEMOGAME_PLAY", "MATCHING_MODE", "MATCHING_MODE_FREE_IP", "LEVEL_LIMIT_EASING", "ACHIEVEMENT_ENABLE", "APICAGACHADRAW\t30", "TAMAADV_ENABLE", "VOLFORCE_ENABLE", "AKANAME_ENABLE", "PAUSE_ONLINEUPDATE", "CONTINUATION", "TENKAICHI_MODE", "QC_MODE", "KAC_MODE", "DISABLE_MONITOR_ID_CHECK", "FAVORITE_APPEALCARD_MAX\t200", "FAVORITE_MUSIC_MAX\t200", "STANDARD_UNLOCK_ENABLE", "APRIL_RAINBOW_LINE_ACTIVE", "KONAMI_50TH_LOGO", "PLAYERJUDGEADJ_ENABLE", "MIXID_INPUT_ENABLE", "DISP_PASELI_BANNER", "CHARACTER_IGNORE_DISABLE\\t122,123,131,139,140,143,149,160,162,163,164,167,170,174", "STAMP_IGNORE_DISABLE\\t273~312,773~820,993~1032,1245~1284,1469~1508,1585~1632,1633~1672,1737~1776,1777~1816,1897~1936", "SUBBG_IGNORE_DISABLE\\t166~185,281~346,369~381,419~438,464~482,515~552,595~616,660~673,714~727", "OMEGA_ENABLE\t1,2,3,4,5,6,7,8,9", "OMEGA_ARS_ENABLE", "HEXA_ENABLE\t1,2,3,4,5,6,7,8,9,10,11,12", "HEXA_OVERDRIVE_ENABLE\t8", "SKILL_ANALYZER_ABLE", "BLASTER_ABLE", "PREMIUM_TIME_ENABLE", "MEGAMIX_ENABLE", "ARENA_ENABLE", "ARENA_LOCAL_TO_ONLINE_ENABLE", "ARENA_ALTER_MODE_WINDOW_ENABLE", "ARENA_PASS_MATCH_WINDOW_ENABLE", "ARENA_VOTE_MODE_ENABLE", "ARENA_LOCAL_ULTIMATE_MATCH_ALWAYS", "MEGAMIX_BATTLE_MATCH_ENABLE", "DISABLED_MUSIC_IN_ARENA_ONLINE", "SINGLE_BATTLE_ENABLE", "GENERATOR_ABLE", "CREW_SELECT_ABLE", "VALGENE_ENABLE", "PLAYER_RADAR_ENABLE", "S_PUC_EFFECT_ENABLE", "FAVORITE_CREW_ENABLE", "SUPER_RANDOM_ACTIVE", "ULTIMATE_MATCH_PLAYABLE_ALWAYS", "CLOUD_LINK_ENABLE", "TAMAADV_VALGENE_BONUS_ENABLE"
 	].concat(pcbData.enabledFlags || []);
+
+	const sv7FixedFlags = sv6FixedFlags.concat(["APIPAGENE_ENABLE", "FACTORY", "APIPA_MASK_BANNER", "VALGENE_MASK_BANNER", "SKILLLEVEL_AVERAGE_SCORE_DISP_ENABLE", "BlasterStageAvailable"]);
 
 	return res.json({
 		game:{
 			valgene: final.game.valgene,
 			arena: final.game.arena,
 			event:{
-				info: fixedFlags.map(flag => ({
-					event_id: xmlVar(flag, "str"),
-				}),)
+				info: (version === 6 ? sv6FixedFlags : sv7FixedFlags)
+					.map(flag => ({
+						event_id: xmlVar(flag, "str"),
+					}),)
 			},
 			extend: final.game.extend,
 			music_limited: final.game.music_limited,
 			skill_course: final.game.skill_course,
 			weekly_music: final.game.weekly_music,
+			apigene: version === 7 ? final.game.apigene : {},
 		}
 	});
 }
@@ -550,36 +639,101 @@ async function getServerHiScores(req: UnkownRequest, res: Response) {
 			songType: {$first: "$songType"},
 			sdvxId: {$first: "$sdvxId"},
 			name: {$first: "$name"},
-			score: {$first: "$score"},
+			score: {$first: "$score"}
 		}).exec();
+
+	// Get the best exscore for every song and every type
+	const bestExScores = await SdvxUserMusicDetailModel.aggregate<{
+		_id: {songId: number, songType: number},
+		songId: number,
+		songType: number,
+		sdvxId: string,
+		name: string,
+		exscore: number
+	}>()
+		.match({
+			songId: { $gte: minSongId, $lt: maxSongId }
+		})
+		.sort({songId: 1, songType: 1, exscore: -1})
+		.group({
+			_id: {songId: "$songId", songType: "$songType"},
+			songId: {$first: "$songId"},
+			songType: {$first: "$songType"},
+			sdvxId: {$first: "$sdvxId"},
+			name: {$first: "$name"},
+			exscore: {$first: "$exscore"}
+		}).exec();
+
+	const hiScores = bestScores.map(score => {
+		const bestExScore = bestExScores.find(exScore => exScore.songId === score.songId && exScore.songType === score.songType);
+
+		const result:Record<string, unknown> = {
+			id: xmlVar(score.songId, "u32"),
+			ty: xmlVar(score.songType, "u32"),
+			// GLOBAL SCORES
+			a_sq: xmlVar(score.sdvxId.padStart(8, "0"), "str"),
+			a_nm: xmlVar(score.name, "str"),
+			a_sc: xmlVar(score.score, "u32"),
+			// LOCAL SCORES
+			l_sq: xmlVar(score.sdvxId.padStart(8, "0"), "str"),
+			l_nm: xmlVar(score.name, "str"),
+			l_sc: xmlVar(score.score, "u32"),
+		};
+
+		if (bestExScore) {
+			result.ax_sq = xmlVar(bestExScore.sdvxId.padStart(8, "0"), "str");
+			result.ax_nm = xmlVar(bestExScore.name, "str");
+			result.ax_sc = xmlVar(bestExScore.exscore, "u32");
+
+			result.lx_sq = xmlVar(bestExScore.sdvxId.padStart(8, "0"), "str");
+			result.lx_nm = xmlVar(bestExScore.name, "str");
+			result.lx_sc = xmlVar(bestExScore.exscore, "u32");
+		}
+
+		return result;
+	});
 
 	return res.json({
 		game:{
 			$:{ status: "0" },
 			sc:{
-				d: bestScores.map(score => ({
-					id: xmlVar(score.songId, "u32"),
-					ty: xmlVar(score.songType, "u32"),
-					a_sq: xmlVar(score.sdvxId.padStart(8, "0"), "str"),
-					a_nm: xmlVar(score.name, "str"),
-					a_sc: xmlVar(score.score, "u32"),
-					l_sq: xmlVar("", "str"),
-					l_nm: xmlVar("", "str"),
-					l_sc: xmlVar("0", "u32"),
-				}))
+				d: hiScores
 			}
 		}
 	});
 }
+// return send.object({
+// 	sc: {
+// 		d: _.map(
+// 			_.groupBy(records, r => {
+// 				return `${r.mid}:${r.type}`;
+// 			}),
+// 			r => _.maxBy(r, 'score')
+// 		).map(r => ({
+// 			id: K.ITEM('u32', r.mid),
+// 			ty: K.ITEM('u32', r.type),
+// 			a_sq: K.ITEM('str', IDToCode(profiles[r.__refid][0].id)),
+// 			a_nm: K.ITEM('str', profiles[r.__refid][0].name),
+// 			a_sc: K.ITEM('u32', r.score),
+// 			l_sq: K.ITEM('str', IDToCode(profiles[r.__refid][0].id)),
+// 			l_nm: K.ITEM('str', profiles[r.__refid][0].name),
+// 			l_sc: K.ITEM('u32', r.score),
+// 		})),
+// 	},
+// });
+// };
 
 async function registerCard(req: UnkownRequest, res: Response) {
 	const cardRegister = req.body as CardGetRefIdType;
 
 	const internalAccessCode = cardRegister.cardmng.$.cardid;
+	const accessCode = encode(internalAccessCode);
 	const pin = cardRegister.cardmng.$.passwd;
+	const profileId = generateExternalId(accessCode);
 
 	await Card.create({
-		accessCode: encode(internalAccessCode),
+		accessCode,
+		profileId,
 		extId:internalAccessCode,
 		registerDate:new Date(),
 		lastLoginDate:new Date(),
@@ -656,22 +810,55 @@ async function generateSdvxId(): Promise<string> {
 	return sdvxId;
 }
 
-async function createUserData(req: UnkownRequest, res: Response) {
+async function createUserData(req: UnkownRequest, res: Response, version:number) {
 	const userData = req.body as CreateUserDataType;
 
 	const accessCode = v(userData.game.dataid);
+	const foundCard = await Card.findOne({extId: accessCode});
+
+	if(!foundCard) {
+		return res.json({
+			game: {
+				$: {
+					status: "116"
+				},
+				result: xmlVar("1", "u8")
+			}
+		});
+	}
+
+
 	const userName = v(userData.game.name);
 
-	await SdvxUserDataModel.create({
-		cardId: accessCode,
-		version:6,
-		name:userName,
-		sdvxId:await generateSdvxId(),
-		eaShop:{
-			blasterPassEnable: "1",
-			blasterPassLimitDate: "1767003232418",
+	// Check if user data already exists for older versions
+	const foundUser = await SdvxUserDataModel.findOne({cardId: foundCard.profileId}).lean();
+	const {_id, ...existingUser} = foundUser || {};
+	if (existingUser) {
+		await SdvxUserDataModel.create({
+			...existingUser,
+			version,
+		});
+
+		const userParams = await SdvxUserParamModel.find({cardId: foundCard.profileId}).lean();
+		for (const param of userParams) {
+			const {_id, ...existingParam} = param;
+			await SdvxUserParamModel.create({
+				...existingParam,
+				version,
+			});
 		}
-	});
+	} else {
+		await SdvxUserDataModel.create({
+			cardId: foundCard.profileId,
+			version,
+			name: userName,
+			sdvxId: await generateSdvxId(),
+			eaShop: {
+				blasterPassEnable: "1",
+				blasterPassLimitDate: "1767003232418",
+			}
+		});
+	}
 
 	return res.json({
 		game: {
@@ -680,20 +867,32 @@ async function createUserData(req: UnkownRequest, res: Response) {
 	});
 }
 
-async function loadUserData(req: UnkownRequest, res: Response) {
+async function loadUserData(req: UnkownRequest, res: Response, version:number) {
 	const requestBody = req.body as LoadUserDataType;
 
 	const accessCode = v(requestBody.game.dataid);
+	const foundCard = await Card.findOne({extId: accessCode});
 
-	const userData = await SdvxUserDataModel.findOne({cardId: accessCode, version: 6}).lean();
-	const userItems:{type:string, id:string, param:string}[] = await SdvxUserItemModel.find({cardId: accessCode, version: 6}).lean();
-	const userWeeklyMusic = await SdvxUserWeeklyMusicModel.find({cardId: accessCode, version: 6}).lean();
-	const userPresents = await SdvxUserPresentModel.find({cardId: accessCode, version: 6}).lean();
-	const userParams = await SdvxUserParamModel.find({cardId: accessCode, version: 6}).lean();
-	const userArena = await SdvxUserArenaModel.findOne({cardId: accessCode, version: 6})
+	if(!foundCard) {
+		return res.json({
+			game: {
+				$: {
+					status: "116"
+				},
+				result: xmlVar("1", "u8")
+			}
+		});
+	}
+
+	const userData = await SdvxUserDataModel.findOne({cardId: foundCard.profileId}).sort({version:-1}).lean();
+	const userItems:{type:string, id:string, param:string}[] = await SdvxUserItemModel.find({cardId: foundCard.profileId}).lean();
+	const userWeeklyMusic = await SdvxUserWeeklyMusicModel.find({cardId: foundCard.profileId}).lean();
+	const userPresents = await SdvxUserPresentModel.find({cardId: foundCard.profileId}).lean();
+	const userParams = await SdvxUserParamModel.find({cardId: foundCard.profileId, version}).lean();
+	const userArena = await SdvxUserArenaModel.findOne({cardId: foundCard.profileId})
 		.sort({season:-1}).lean();
-	const userVariantGate = await SdvxUserVariantGateModel.findOne({cardId: accessCode, version: 6}).lean();
-	const userCourses = await SdvxUserCourseModel.find({cardId: accessCode, version: 6}).lean();
+	const userVariantGate = await SdvxUserVariantGateModel.findOne({cardId: foundCard.profileId}).lean();
+	const userCourses = await SdvxUserCourseModel.find({cardId: foundCard.profileId}).lean();
 
 	if (!userData) {
 		return res.json({
@@ -702,6 +901,15 @@ async function loadUserData(req: UnkownRequest, res: Response) {
 					status: "0"
 				},
 				result: xmlVar("1", "u8")
+			}
+		});
+	}
+
+	if(userData.version < version) {
+		return res.json({
+			game: {
+				name: xmlVar(userData.name, "str"),
+				result: xmlVar("2", "u8"),
 			}
 		});
 	}
@@ -716,6 +924,8 @@ async function loadUserData(req: UnkownRequest, res: Response) {
 
 	if (userData.unlockAppeal) {
 		for (let i = 0; i <= HIGEST_APPEAL_ID; ++i) userItems.push({ type: "1", id: `${i}`, param: "1" });
+		for (let i = 0; i <= 50; ++i) userItems.push({ type: "23", id: i, param: "99" });
+		for (let i = 0; i <= 200; ++i) userItems.push({ type: "24", id: i, param: "99" });
 	}
 
 	return res.json({
@@ -765,7 +975,11 @@ async function loadUserData(req: UnkownRequest, res: Response) {
 			support_team_id: xmlVar(userData.supportTeamId, "s32"),
 
 			additional_info: userData.additionalInfo ? {
-				pro_team_id: xmlVar(userData.additionalInfo.proTeamId, "s32"),
+				pro_team_id: {
+					$:{
+						val:userData.additionalInfo.proTeamId
+					}
+				}
 			} : "",
 
 			ea_shop: userData.eaShop ? {
@@ -834,7 +1048,7 @@ async function loadUserData(req: UnkownRequest, res: Response) {
 					param: {
 						$: {
 							"__type": "s32",
-							"__count":`${param.count}`
+							"__count":`${param.count||1}`
 						},
 						_: param.param
 					}
@@ -881,37 +1095,55 @@ async function loadUserData(req: UnkownRequest, res: Response) {
 	});
 }
 
-async function loadUserMusic(req: UnkownRequest, res: Response) {
+async function loadUserMusic(req: UnkownRequest, res: Response, version:number) {
 	const requestBody = req.body as LoadUserDataType;
 
 	const accessCode = v(requestBody.game.refid);
+	const foundCard = await Card.findOne({extId: accessCode});
 
-	const userMusicDetails = await SdvxUserMusicDetailModel.find({cardId: accessCode, version: 6});
+	if(!foundCard) {
+		return noOp(req, res, "game");
+	}
+
+	const userMusicDetails = await SdvxUserMusicDetailModel.find({cardId: foundCard.profileId});
 
 	return res.json({
 		game: {
 			music: {
-				info: userMusicDetails.map(musicDetail => ({
-					param: {
-						"_":[
-							musicDetail.songId,
-							musicDetail.songType,
-							musicDetail.score,
-							musicDetail.exscore,
-							musicDetail.clearType,
-							musicDetail.scoreGrade,
-							0, 0,
-							musicDetail.btnRate,
-							musicDetail.longRate,
-							musicDetail.volRate,
-							0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-						].join(" "),
-						$: {
-							"__type":"u32",
-							"__count":"21"
+				info: userMusicDetails.map(musicDetail => {
+					if(version===7){
+						switch(musicDetail.clearType){
+						case 4: musicDetail.clearType = 5; break;
+						case 5: musicDetail.clearType = 6; break;
+						case 6: musicDetail.clearType = 4; break;
 						}
 					}
-				}))
+
+					return {
+						param: {
+							"_":[
+								musicDetail.songId,
+								musicDetail.songType,
+								musicDetail.score,
+								musicDetail.exscore,
+								musicDetail.clearType,
+								musicDetail.scoreGrade,
+								0,
+								0,
+								musicDetail.btnRate,
+								musicDetail.longRate,
+								musicDetail.volRate,
+								musicDetail.score,
+								musicDetail.clearType,
+								0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+							].join(" "),
+							$: {
+								"__type":"u32",
+								"__count":"26"
+							}
+						}
+					};
+				})
 			}
 		}
 	});
@@ -920,7 +1152,15 @@ async function loadUserMusic(req: UnkownRequest, res: Response) {
 async function loadUserRivals(req: UnkownRequest, res: Response) {
 	const requestBody = req.body as {game: {refid: SingleXmlVariableType}};
 
-	const foundUserData = await SdvxUserDataModel.findOne({cardId: v(requestBody.game.refid), version: 6});
+	const foundCard = await Card.findOne({extId: v(requestBody.game.refid)});
+
+	if(!foundCard) {
+		return noOp(req, res, "game");
+	}
+
+	// TODO sistema para saber versiones
+
+	const foundUserData = await SdvxUserDataModel.findOne({cardId: foundCard.profileId});
 	if (!foundUserData) {
 		return noOp(req, res, "game");
 	}
@@ -959,20 +1199,28 @@ async function loadUserRivals(req: UnkownRequest, res: Response) {
 async function saveUserData(req: UnkownRequest, res: Response) {
 	const userData = req.body as UpsertUserDataType;
 
-	// Update arena
-	await SdvxUserArenaModel.findOneAndUpdate(
-		{cardId: v(userData.game.refid), version: 6, season:v(userData.game.arena.season)},
-		{
-			$inc:{
-				rankPoint: parseInt(v(userData.game.arena.earned_rank_point)),
-				shopPoint: parseInt(v(userData.game.arena.earned_shop_point)),
-				ultimateRate: parseInt(v(userData.game.arena.earned_ultimate_rate)),
-				megamixRate: parseInt(v(userData.game.arena.earned_megamix_rate)),
-				rankPlayCnt: v(userData.game.arena.rank_play) === "true" ? 1 : 0,
-				ultimatePlayCnt: v(userData.game.arena.ultimate_play) === "true" ? 1 : 0
-			}
-		}, {upsert:true}
-	);
+	const foundCard = await Card.findOne({extId: v(userData.game.refid)});
+
+	if(!foundCard) {
+		return noOp(req, res, "game");
+	}
+
+	if(userData.game.arena) {
+		// Update arena
+		await SdvxUserArenaModel.findOneAndUpdate(
+			{cardId: foundCard.profileId, version: 7, season: v(userData.game.arena.season)},
+			{
+				$inc: {
+					rankPoint: parseInt(v(userData.game.arena.earned_rank_point)),
+					shopPoint: parseInt(v(userData.game.arena.earned_shop_point)),
+					ultimateRate: parseInt(v(userData.game.arena.earned_ultimate_rate)),
+					megamixRate: parseInt(v(userData.game.arena.earned_megamix_rate)),
+					rankPlayCnt: v(userData.game.arena.rank_play) === "true" ? 1 : 0,
+					ultimatePlayCnt: v(userData.game.arena.ultimate_play) === "true" ? 1 : 0
+				}
+			}, {upsert: true}
+		);
+	}
 
 	// Update items
 	if (userData.game.item){
@@ -984,7 +1232,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 			if (!itemInfo.type || !itemInfo.id || !itemInfo.param) continue;
 
 			await SdvxUserItemModel.findOneAndUpdate(
-				{cardId: v(userData.game.refid), version: 6, type: v(itemInfo.type), id: v(itemInfo.id)},
+				{cardId: foundCard.profileId, version: 7, type: v(itemInfo.type), id: v(itemInfo.id)},
 				{
 					$set:{
 						param: itemInfo.param._
@@ -1005,7 +1253,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 			if (!paramInfo.type || !paramInfo.id || !paramInfo.param) continue;
 
 			await SdvxUserParamModel.findOneAndUpdate(
-				{cardId: v(userData.game.refid), version: 6, type: v(paramInfo.type), id: v(paramInfo.id)},
+				{cardId: foundCard.profileId, version: 7, type: v(paramInfo.type), id: v(paramInfo.id)},
 				{
 					$set:{
 						param: paramInfo.param._
@@ -1022,7 +1270,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 	// Update courses
 	if (userData.game.course){
 		await SdvxUserCourseModel.findOneAndUpdate(
-			{cardId: v(userData.game.refid), version: 6, ssnid: v(userData.game.course.ssnid), crsid: v(userData.game.course.crsid)},
+			{cardId: foundCard.profileId, version: 7, ssnid: v(userData.game.course.ssnid), crsid: v(userData.game.course.crsid)},
 			{
 				$set:{
 					st: v(userData.game.course.st),
@@ -1043,7 +1291,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 	// Update variantgate
 	if (userData.game.variant_gate) {
 		await SdvxUserVariantGateModel.findOneAndUpdate(
-			{cardId: v(userData.game.refid), version: 6},
+			{cardId: foundCard.profileId, version: 7},
 			{
 				$set: userData.game.variant_gate.over_radar ? {
 					overRadar: userData.game.variant_gate.over_radar.$.__count
@@ -1061,7 +1309,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 		);
 	}
 
-	const foundUserData = await SdvxUserDataModel.findOne({cardId: v(userData.game.refid), version: 6}).lean();
+	const foundUserData = await SdvxUserDataModel.findOne({cardId: foundCard.profileId, version: 7}).lean();
 	if (!foundUserData) {
 		return noOp(req, res, "game");
 	}
@@ -1121,7 +1369,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 	}
 
 	await SdvxUserDataModel.updateOne(
-		{cardId: v(userData.game.refid), version: 6},
+		{cardId: foundCard.profileId, version: 6},
 		{
 			$set:{
 				lastPlayed: now,
@@ -1161,10 +1409,16 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 	});
 }
 
-async function saveUserPlaylog(req: UnkownRequest, res: Response) {
+async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number) {
 	const userPlaylog = req.body as UpsertUserPlaylogType;
 
-	const userData = await SdvxUserDataModel.findOne({cardId: v(userPlaylog.game.refid), version: 6});
+	const foundCard = await Card.findOne({extId: v(userPlaylog.game.refid)});
+
+	if(!foundCard) {
+		return noOp(req, res, "game");
+	}
+
+	const userData = await SdvxUserDataModel.findOne({cardId: foundCard.profileId, version});
 
 	if (!userData) {
 		return noOp(req, res, "game");
@@ -1176,8 +1430,8 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response) {
 
 	for (const track of userPlaylog.game.track) {
 		await SdvxUserPlaylogModel.create({
-			cardId: v(userPlaylog.game.refid),
-			version: 6,
+			cardId: foundCard.profileId,
+			version: version,
 			trackId: v(track.track_no),
 			songId: v(track.music_id),
 			songType: v(track.music_type),
@@ -1217,16 +1471,16 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response) {
 		});
 
 		const previousPB = await SdvxUserMusicDetailModel.findOne({
-			cardId: v(userPlaylog.game.refid),
-			version: 6,
+			cardId: foundCard.profileId,
+			version,
 			songId: parseInt(v(track.music_id)),
 			songType: parseInt(v(track.music_type)),
 		}).lean();
 
 		if (!previousPB) {
 			await SdvxUserMusicDetailModel.create({
-				cardId: v(userPlaylog.game.refid),
-				version: 6,
+				cardId: foundCard.profileId,
+				version,
 				sdvxId: userData.sdvxId,
 				name: userData.name,
 
@@ -1275,10 +1529,11 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response) {
 			previousPBMutable.volRate = parseInt(v(track.vol_rate));
 		}
 
+		previousPBMutable.version = version;
+
 		await SdvxUserMusicDetailModel.findOneAndReplace(
 			{
-				cardId: v(userPlaylog.game.refid),
-				version: 6,
+				cardId: foundCard.profileId,
 				songId: parseInt(v(track.music_id)),
 				songType: parseInt(v(track.music_type)),
 			},
@@ -1289,8 +1544,14 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response) {
 	return noOp(req, res, "game");
 }
 
-async function saveWeeklyMusic(req: UnkownRequest, res: Response) {
+async function saveWeeklyMusic(req: UnkownRequest, res: Response, version:number) {
 	const requestBody = req.body as SaveWeeklyMusicType;
+
+	const foundCard = await Card.findOne({extId: v(requestBody.game.refid)});
+
+	if(!foundCard) {
+		return noOp(req, res, "game");
+	}
 
 	if(requestBody.game.weekly_music) {
 		if(!Array.isArray(requestBody.game.weekly_music)) {
@@ -1304,12 +1565,12 @@ async function saveWeeklyMusic(req: UnkownRequest, res: Response) {
 				musicType: v(weeklyMusic.music_type),
 			});
 
-			const userEntry = existingEntries.find(entry => entry.cardId === v(requestBody.game.refid));
+			const userEntry = existingEntries.find(entry => entry.cardId === foundCard.profileId);
 			let newRank = 1;
 			const newScore = userEntry ? Math.max(parseInt(v(weeklyMusic.exscore)), parseInt(userEntry.exscore)) : parseInt(v(weeklyMusic.exscore));
 
 			for (const entry of existingEntries) {
-				if (entry.cardId === v(requestBody.game.refid)) continue;
+				if (entry.cardId === foundCard.profileId) continue;
 
 				if (parseInt(entry.exscore) > newScore) {
 					newRank++;
@@ -1318,8 +1579,8 @@ async function saveWeeklyMusic(req: UnkownRequest, res: Response) {
 
 			await SdvxUserWeeklyMusicModel.findOneAndUpdate(
 				{
-					cardId: v(requestBody.game.refid),
-					version: 6,
+					cardId: foundCard.profileId,
+					version,
 					weekId: v(weeklyMusic.week_id),
 					musicId: v(weeklyMusic.music_id),
 					musicType: v(weeklyMusic.music_type),
@@ -1345,12 +1606,19 @@ async function giveValgenePrice(req: UnkownRequest, res: Response) {
 		requestBody.game.item.info = [requestBody.game.item.info];
 	}
 
+	const foundCard = await Card.findOne({extId: v(requestBody.game.refid)});
+
+	if(!foundCard) {
+		return noOp(req, res, "game");
+	}
+
+	// TODO sistema para saber versiones
 
 	const result = xmlVar("1", "s32") as Record<string, unknown>;
 
 	if (v(requestBody.game.use_ticket)==="1"){
 		const userData = await SdvxUserDataModel.findOneAndUpdate({
-			cardId: requestBody.game.refid
+			cardId: foundCard.profileId,
 		}, {
 			$inc: {
 				"valgeneTicket.ticketNum":-1
@@ -1373,7 +1641,7 @@ async function giveValgenePrice(req: UnkownRequest, res: Response) {
 		if (type === "17"){
 			for (let stampId = ((id * 4) - 3); stampId <= (id * 4); stampId++) {
 				itemsToAdd.push({
-					cardId: v(requestBody.game.refid),
+					cardId: foundCard.profileId,
 					version: 6,
 					type,
 					id: `${stampId}`,
@@ -1382,7 +1650,7 @@ async function giveValgenePrice(req: UnkownRequest, res: Response) {
 			}
 		}else {
 			itemsToAdd.push({
-				cardId: v(requestBody.game.refid),
+				cardId: foundCard.profileId,
 				version: 6,
 				type,
 				id: `${id}`,
@@ -1436,91 +1704,81 @@ function exchangeCoin(req: UnkownRequest, res: Response) {
 
 // ONLINE FUNCTIONS
 async function matchMaking(req: UnkownRequest, res: Response) {
-	// THIS FUNCTION DOES NOT WORK
+	const requestBody = req.body as MatchMakingRequestType;
 
-	return noOp(req, res, "game");
+	const globalIp = v(requestBody.game.gip).replace(/ /g, ".");
+	const localIp = v(requestBody.game.lip).replace(/ /g, ".");
 
-	// const requestBody = req.body as MatchMakingRequestType;
-	//
-	// const globalIp = v(requestBody.game.gip).replace(/ /g, ".");
-	// const localIp = v(requestBody.game.lip).replace(/ /g, ".");
-	//
-	// console.log("[" + localIp + " | " + globalIp + "] Searching for online match opponents");
-	//
-	// // 	remove all matches older than 1 minute
-	// await SdvxMatchModel.deleteMany({
-	// 	lastUpdate: { $lt: new Date(Date.now() - 60 * 1000) }
-	// });
-	//
-	// const existingMatch = await SdvxMatchModel.find({
-	// 	cVer: v(requestBody.game.c_ver),
-	// 	filter: v(requestBody.game.filter),
-	// 	claim: v(requestBody.game.claim),
-	// 	entryId: v(requestBody.game.entry_id),
-	// });
-	//
-	// // const otherMatches = await SdvxMatchModel.find({
-	// // 	cVer: v(requestBody.game.c_ver),
-	// // 	filter: v(requestBody.game.filter),
-	// // 	claim: v(requestBody.game.claim),
-	// // 	entryId: v(requestBody.game.entry_id),
-	// // 	lip: localIp,
-	// // 	gip: globalIp,
-	// // });
-	//
-	// if (!existingMatch.length) {
-	// 	await SdvxMatchModel.create({
-	// 		cVer: v(requestBody.game.c_ver),
-	// 		pNum: v(requestBody.game.p_num),
-	// 		pRest: v(requestBody.game.p_rest),
-	// 		filter: v(requestBody.game.filter),
-	// 		mid: v(requestBody.game.mid),
-	// 		sec: v(requestBody.game.sec),
-	// 		port: v(requestBody.game.port),
-	// 		gip: globalIp,
-	// 		lip:localIp,
-	// 		claim: v(requestBody.game.claim),
-	// 		entryId: v(requestBody.game.entry_id)
-	// 	});
-	// } else {
-	// 	await SdvxMatchModel.findOneAndUpdate({
-	// 		gip: globalIp,
-	// 		lip:localIp
-	// 	}, {
-	// 		cVer: v(requestBody.game.c_ver),
-	// 		pNum: v(requestBody.game.p_num),
-	// 		pRest: v(requestBody.game.p_rest),
-	// 		filter: v(requestBody.game.filter),
-	// 		mid: v(requestBody.game.mid),
-	// 		sec: v(requestBody.game.sec),
-	// 		port: v(requestBody.game.port),
-	// 		claim: v(requestBody.game.claim),
-	// 		entryId: v(requestBody.game.entry_id)
-	// 	}, {upsert:true});
-	// }
-	//
-	// if(v(requestBody.game.p_rest) === "0"){
-	// 	console.log("Room full");
-	// 	return noOp(req, res, "game");
-	// }
-	//
-	// const opponents = await SdvxMatchModel.find({
-	// 	cVer: v(requestBody.game.c_ver),
-	// 	filter: v(requestBody.game.filter),
-	// 	claim: v(requestBody.game.claim),
-	// 	entryId: v(requestBody.game.entry_id)
-	// });
-	//
-	// return res.json({
-	// 	game:{
-	// 		entry_id: xmlVar(v(requestBody.game.entry_id), "u32"),
-	// 		entry: !opponents.length ? "" : opponents.map(opponent => ({
-	// 			port: xmlVar(opponent.port, "u16"),
-	// 			gip: xmlVar(opponent.gip.replace(/\./g, " "), "4u8"),
-	// 			lip: xmlVar(opponent.lip.replace(/\./g, " "), "4u8"),
-	// 		}))
-	// 	}
-	// });
+	console.log("[" + localIp + " | " + globalIp + "] Searching for online match opponents");
+
+	// 	remove all matches older than 100 seconds
+	await SdvxMatchModel.deleteMany({
+		lastUpdate: { $lt: new Date(Date.now() - 100 * 1000) }
+	});
+
+	// Comprueba si existen partidas activas
+	const existingMatches = await SdvxMatchModel.find({
+		cVer: v(requestBody.game.c_ver),
+		filter: v(requestBody.game.filter),
+		claim: v(requestBody.game.claim),
+	});
+
+	let roomId = "0";
+
+	// Si existe se coge el primer roomId
+	if(existingMatches.length){
+		roomId = existingMatches[0]!.entryId;
+	} else {
+		// Si no existe se crea uno nuevo
+		roomId = (Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000).toString();
+	}
+
+	// Buscar jugadores en la misma sala
+	const opponents = existingMatches.filter(match => match.entryId === roomId);
+
+	if(opponents.length>4){
+		return noOp(req, res, "game");
+	}
+
+	await SdvxMatchModel.create({
+		cVer: v(requestBody.game.c_ver),
+		pNum: v(requestBody.game.p_num),
+		pRest: v(requestBody.game.p_rest),
+		filter: v(requestBody.game.filter),
+		mid: v(requestBody.game.mid),
+		sec: v(requestBody.game.sec),
+		port: v(requestBody.game.port),
+		gip: globalIp,
+		lip:localIp,
+		claim: v(requestBody.game.claim),
+		entryId: roomId,
+		lastUpdate: new Date(),
+	});
+
+	const response = {
+		game:{
+			entry_id: xmlVar(roomId, "u32")
+		}
+	} as {
+		game: {
+			entry_id: SingleXmlVariableType,
+			entry?: {
+				port: SingleXmlVariableType|string,
+				gip: SingleXmlVariableType|string,
+				lip: SingleXmlVariableType|string,
+			}[]
+		}
+	};
+
+	if(opponents.length){
+		response.game.entry = opponents.map(opponent => ({
+			port: xmlVar(opponent.port, "u16"),
+			gip: xmlVar(opponent.gip.replace(/\./g, " "), "4u8"),
+			lip: xmlVar(opponent.lip.replace(/\./g, " "), "4u8"),
+		}));
+	}
+
+	return res.json(response);
 }
 
 async function lounge(req: UnkownRequest, res: Response) {
@@ -1528,9 +1786,9 @@ async function lounge(req: UnkownRequest, res: Response) {
 
 	const filter = v(requestBody.game.filter);
 
-	// 	remove all matches older than 1 minute
+	// 	remove all matches older than 100 seconds
 	await SdvxMatchModel.deleteMany({
-		lastUpdate: { $lt: new Date(Date.now() - 60 * 1000) }
+		lastUpdate: { $lt: new Date(Date.now() - 100 * 1000) }
 	});
 
 	const matches = await SdvxMatchModel.find({
@@ -1545,7 +1803,7 @@ async function lounge(req: UnkownRequest, res: Response) {
 		});
 	} else{
 		const highestWaitTime = matches.reduce((max, match) => {
-			const matchWaitTime = parseInt(match.pRest);
+			const matchWaitTime = parseInt(match.sec);
 			return matchWaitTime > max ? matchWaitTime : max;
 		}, 0);
 

@@ -196,7 +196,7 @@ class AimedbServlette {
 		const foundCard = await Card.findOne({accessCode:req.access_code});
 
 		if(foundCard){
-			userId = parseInt(foundCard.extId);
+			userId = parseInt(foundCard.profileId);
 		}
 
 		const response = Buffer.alloc(0x130)
@@ -257,6 +257,7 @@ class AimedbServlette {
 			const newCard:CardType = {
 				accessCode,
 				extId:userId,
+				profileId:userId,
 				registerDate:new Date(),
 				lastLoginDate:new Date(),
 				status:"good",

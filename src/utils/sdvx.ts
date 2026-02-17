@@ -3,8 +3,12 @@ import crypto from "crypto";
 import rc4 from "arc4";
 import * as lz77 from "@kamyu/lz77";
 import type {Request, Response} from "express";
-import {Builder} from "xml2js";
+import {Builder, parseString} from "xml2js";
 import {config} from "../config/config.ts";
+import {log} from "./general.ts";
+import * as util from "node:util";
+// import {log} from "./general.ts";
+// import * as util from "node:util";
 
 const hexKey = config.BMN_ENC_KEY;
 const internalKey = Buffer.from(hexKey, "hex");
@@ -119,10 +123,10 @@ export function getWeekNumber (date: Date) {
 	return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 }
 
-// parseString(decodeKNMXML("", "none", "6a73de60", "acdc"), {explicitArray: false, explicitRoot: false}, (err, result) => {
+// parseString(decodeKNMXML("", "lz77", "6987dd3b", "4849"), {explicitArray: false, explicitRoot: false}, (err, result) => {
 // 	if (err) {
 // 		log("error", `Error parsing XML: ${err.message}`);
 // 	} else {
-// 		console.log(util.inspect(result, {depth: null}));
+// 		console.log(util.inspect(result["game"]["music"]["info"].splice(200), {depth: null}));
 // 	}
 // });

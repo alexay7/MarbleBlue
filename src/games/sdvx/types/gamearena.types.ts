@@ -13,6 +13,7 @@ export type SdvxGameArenaType = {
     _id: Types.ObjectId;
 
     id:number;
+    version:number;
     // rule: 0 score, 1 point, 2 vote
     rule:string;
     // rankMatchTarget: 0 arena, 1 single, 2 mega

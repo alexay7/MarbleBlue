@@ -194,7 +194,7 @@ chu3CMRouter.post("/RollGachaApi", async (req:Request, res) => {
 
 	let cards:Chu3GameGachaCardType[];
 
-	if(req.body.characterId) {
+	if(req.body.characterId && req.body.characterId > 0) {
 		cards = await Chu3GameGacha.aggregate([
 			{$match: {gachaId: req.body.gachaId, "cards.characterId": req.body.characterId}},
 			{$unwind: "$cards"},

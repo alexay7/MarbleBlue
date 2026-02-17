@@ -1,6 +1,9 @@
 import {Types} from "mongoose";
 
 export type CardType = {
+    // Identificador del perfil asociado
+    profileId:string;
+
     // Identificador de la tarjeta
     extId:string;
 

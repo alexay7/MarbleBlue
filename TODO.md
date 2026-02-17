@@ -27,6 +27,11 @@ NO HAY TAREAS PENDIENTES
 
 # 〇 (por determinar)
 
-# 律 (por determinar)
+# 律 
+- [ ] Modificación de nombre
+- [ ] Detalles de una partida
+- [ ] Modificación de favoritos
+- [ ] Localización de textos
+- [ ] Media de puntuación en tabla por niveles
 
 # 弐 (por determinar)
