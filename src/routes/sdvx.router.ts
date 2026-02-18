@@ -924,8 +924,8 @@ async function loadUserData(req: UnkownRequest, res: Response, version:number) {
 
 	if (userData.unlockAppeal) {
 		for (let i = 0; i <= HIGEST_APPEAL_ID; ++i) userItems.push({ type: "1", id: `${i}`, param: "1" });
-		for (let i = 0; i <= 50; ++i) userItems.push({ type: "23", id: i, param: "99" });
-		for (let i = 0; i <= 200; ++i) userItems.push({ type: "24", id: i, param: "99" });
+		for (let i = 0; i <= 50; ++i) userItems.push({ type: "23", id: `${i}`, param: "99" });
+		for (let i = 0; i <= 200; ++i) userItems.push({ type: "24", id: `${i}`, param: "99" });
 	}
 
 	return res.json({
@@ -1500,6 +1500,8 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number
 		}
 
 		const previousPBMutable = JSON.parse(JSON.stringify(previousPB));
+
+		delete previousPBMutable._id;
 
 		if (parseInt(v(track.score)) > previousPB.score) {
 			previousPBMutable.score = parseInt(v(track.score));
