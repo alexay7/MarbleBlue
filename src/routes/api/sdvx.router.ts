@@ -14,6 +14,8 @@ import {SdvxUserPlaylogModel} from "../../games/sdvx/models/userplaylog.model.ts
 
 const sdvxApiRouter = Router({mergeParams: true});
 
+const LAST_VERSION = 7;
+
 sdvxApiRouter.get("/akanames", async (req: Request, res) => {
 	const allAkanames = await SdvxGameAkanameModel.find({}).sort({id: 1});
 
@@ -70,11 +72,23 @@ sdvxApiRouter.get("/usercourses", async (req: Request, res) => {
 
 sdvxApiRouter.get("/ranking", async (_: Request, res) => {
 	const usersRanking = await SdvxUserDataModel.aggregate()
-		.match({version:7})
+		.match({version:LAST_VERSION})
 		.lookup({
 			from: "sdvxuserparams",
-			localField: "cardId",
-			foreignField: "cardId",
+			// search by card and version equal to the last
+			let: { cardId: "$cardId" },
+			pipeline: [
+				{ $match:
+						{ $expr:
+								{ $and:
+										[
+											{ $eq: [ "$cardId",  "$$cardId" ] },
+											{ $eq: [ "$version",  LAST_VERSION ] },
+										]
+								}
+						}
+				},
+			],
 			as: "params"
 		})
 		.lookup({
@@ -102,7 +116,7 @@ sdvxApiRouter.get("/userdata", async (req: Request, res) => {
 });
 
 sdvxApiRouter.get("/userparams", async (req: Request, res) => {
-	const foundUserParams = await SdvxUserParamModel.find({cardId: req.cardId, version:7}).sort({version: -1});
+	const foundUserParams = await SdvxUserParamModel.find({cardId: req.cardId, version:LAST_VERSION}).sort({version: -1});
 
 	res.json(foundUserParams);
 });

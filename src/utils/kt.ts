@@ -87,7 +87,7 @@ type SdvxChart ={
 	difficulty:"NOV"|"ADV"|"EXH"|"MXM"|"HVN"|"GRV"|"INF"|"ULT"|"VVD"|"XCD",
 	songID:number,
 	data:{
-		inGameId:number
+		inGameID:number
 	}
 }
 
@@ -300,7 +300,7 @@ export async function getSdvxPBs(userAlias:string):Promise<string[][]>{
 
 			if (!chart) return [];
 
-			const musicId = chart.songID;
+			const musicId = chart.data.inGameID;
 			const difficulty = convertSdvxDifficulty(chart.difficulty);
 			const score = pb.scoreData.score;
 			const clear = convertSdvxClear(pb.scoreData.lamp);
