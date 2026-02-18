@@ -303,15 +303,15 @@ function getFacilityData(req: UnkownRequest, res: Response) {
 				status: "0",
 			},
 			location:{
-				id: xmlVar("ea", "str"),
+				id: xmlVar("EA000001", "str"),
+				type: xmlVar(0, "u8"),
 				country: xmlVar("JP", "str"),
 				region: xmlVar("JP-13", "str"),
-				name: xmlVar("MarbleBlue", "str"),
-				type: xmlVar("0", "u8"),
+				name: xmlVar("ＭＡＲＢＬＥＢＬＵＥ", "str"),
 				countryname: xmlVar("Japan", "str"),
 				countryjname: xmlVar("日本", "str"),
-				regionname: xmlVar("Tokyo", "str"),
-				regionjname: xmlVar("東京", "str"),
+				regionname: xmlVar("Japan", "str"),
+				regionjname: xmlVar("日本", "str"),
 				customercode: xmlVar("AXUSR", "str"),
 				companycode: xmlVar("AXCPY", "str"),
 				latitude: xmlVar("0", "s32"),
@@ -319,10 +319,10 @@ function getFacilityData(req: UnkownRequest, res: Response) {
 				accuracy: xmlVar("0", "u8"),
 			},
 			line:{
-				id: xmlVar("1", "str"),
+				id: xmlVar("3", "str"),
 				class: xmlVar("8", "u8"),
 				upclass: xmlVar("8", "u8"),
-				rtt: xmlVar("22", "u16"),
+				rtt: xmlVar("500", "u16"),
 			},
 			portfw:{
 				globalip: xmlVar(req.header("X-Forwarded-For")||config.SERVER_IP, "ip4"),
@@ -330,23 +330,26 @@ function getFacilityData(req: UnkownRequest, res: Response) {
 				privateport: xmlVar("5700", "u16"),
 			},
 			public:{
-				flag: xmlVar("1", "u8"),
-				name: xmlVar("MarbleBlue", "str"),
+				flag: xmlVar("0", "u8"),
+				name: xmlVar("ＭＡＲＢＬＥＢＬＵＥ", "str"),
 				latitude: xmlVar("0", "str"),
 				longitude: xmlVar("0", "str"),
 			},
 			share:{
 				eacoin:{
-					notchamount: xmlVar("0", "s32"),
-					notchcount: xmlVar("0", "s32"),
+					notchamount: xmlVar("3000", "s32"),
+					notchcount: xmlVar("3", "s32"),
 					supplylimit: xmlVar("100000", "s32"),
 				},
+				eapass:{
+					valid: xmlVar("365", "u16"),
+				},
 				url:{
-					eapass: xmlVar("https://web.marbleblue.duckdns.org", "str"),
-					arcadefan: xmlVar("https://web.marbleblue.duckdns.org", "str"),
-					konaminetdx: xmlVar("https://web.marbleblue.duckdns.org", "str"),
-					konamiid: xmlVar("https://web.marbleblue.duckdns.org", "str"),
-					eagate: xmlVar("https://web.marbleblue.duckdns.org", "str"),
+					eapass: xmlVar("https://web.marbleblue.qzz.io", "str"),
+					arcadefan: xmlVar("https://web.marbleblue.qzz.io", "str"),
+					konaminetdx: xmlVar("https://web.marbleblue.qzz.io", "str"),
+					konamiid: xmlVar("https://web.marbleblue.qzz.io", "str"),
+					eagate: xmlVar("https://web.marbleblue.qzz.io", "str"),
 				}
 			}
 		}
@@ -369,7 +372,7 @@ function getShopData(req: UnkownRequest, res: Response) {
 		game:{
 			locid: xmlVar("ea", "str"),
 			regcode: xmlVar("1", "str"),
-			locname: xmlVar("MARBLEBLUE", "str"),
+			locname: xmlVar("ＭＡＲＢＬＥＢＬＵＥ", "str"),
 			loctype: xmlVar("0", "u8"),
 			cstcode: xmlVar("AXUSR", "str"),
 			cpycode: xmlVar("AXCPY", "str"),
