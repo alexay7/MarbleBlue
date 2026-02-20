@@ -1114,7 +1114,7 @@ async function loadUserMusic(req: UnkownRequest, res: Response, version:number) 
 		game: {
 			music: {
 				info: userMusicDetails.map(musicDetail => {
-					if(version===7){
+					if(version===7 && musicDetail.version===7){
 						switch(musicDetail.clearType){
 						case 4: musicDetail.clearType = 5; break;
 						case 5: musicDetail.clearType = 6; break;

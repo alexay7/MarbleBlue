@@ -6,6 +6,7 @@ const sdvxGameMusicSchema = new Schema<SdvxGameMusicType>({
 
 	id:{type:Number, required:true},
 	level:{type:String, required:true},
+	levelTag:{type:String, required:true},
 	difficulty:{type:Number, required:true},
 	limited:{type:String, required:true},
 

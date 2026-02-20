@@ -160,6 +160,22 @@ sdvxApiRouter.get("/recentmusic", async (req: Request, res) => {
 	}));
 });
 
+sdvxApiRouter.get("/playlogs", async (req: Request, res) => {
+	const playlogs = await SdvxUserPlaylogModel.find({cardId: req.cardId}).sort({score: -1}).limit(100).lean();
+
+	res.json(playlogs.map(m=>{
+		if(m.version===7){
+			switch(m.clearType){
+			case "4": m.clearType = "6"; break;
+			case "5": m.clearType = "4"; break;
+			case "6": m.clearType = "5"; break;
+			}
+			return m;
+		}
+		return m;
+	}));
+});
+
 sdvxApiRouter.get("/playlog/:musicId/:diff", async (req: Request, res) => {
 	const {musicId, diff} = req.params;
 	const playlogs = await SdvxUserPlaylogModel.find({cardId: req.cardId, songId: musicId, songType: diff}).sort({score: -1}).limit(1).lean();

@@ -5,6 +5,7 @@ export type SdvxGameMusicType = {
 
     id:number;
     level:string;
+    levelTag:string;
     difficulty:number;
     limited:string;
 
