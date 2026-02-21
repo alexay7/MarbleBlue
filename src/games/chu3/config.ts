@@ -24,6 +24,13 @@ export const CHU3VERSIONS = [
 			"2.41"
 		],
 		data: "2.40.12"
+	},
+	{
+		index: 19,
+		roms: [
+			"2.45"
+		],
+		data: "2.45.01"
 	}
 ];
 
