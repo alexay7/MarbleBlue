@@ -358,6 +358,18 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionOpenApi", (_: Request, res) => 
 					endDate: "2099-11-01 00:00:00",
 				}
 				]
+			}, {
+				linkedVerseId: 10007,
+				length: 1,
+				conditionList: [{
+
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
 			}
 		]
 	};
@@ -428,6 +440,17 @@ chu3Router.post("/ChuniServlet/GetGameLVConditionUnlockApi", (_: Request, res) =
 				]
 			}, {
 				linkedVerseId: 10006,
+				length: 1,
+				conditionList: [{
+					type: 3,
+					conditionId:0,
+					logicalOpe: 1,
+					startDate: "2019-01-01 00:00:00",
+					endDate: "2099-11-01 00:00:00",
+				}
+				]
+			}, {
+				linkedVerseId: 10007,
 				length: 1,
 				conditionList: [{
 					type: 3,
