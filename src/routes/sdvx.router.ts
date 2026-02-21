@@ -234,7 +234,7 @@ sdvxRouter.post("/",
 		}
 		case "game.sv6_save":
 		case "game.sv7_save":
-			return saveUserData(req, res);
+			return saveUserData(req, res, isPlus);
 		case "game.sv6_save_m":
 			return saveUserPlaylog(req, res, 6, isPlus);
 		case "game.sv7_save_m":
@@ -1215,7 +1215,7 @@ async function loadUserRivals(req: UnkownRequest, res: Response, plus:boolean) {
 	});
 }
 
-async function saveUserData(req: UnkownRequest, res: Response) {
+async function saveUserData(req: UnkownRequest, res: Response, plus:boolean) {
 	const userData = req.body as UpsertUserDataType;
 
 	const foundCard = await Card.findOne({extId: v(userData.game.refid)});
@@ -1263,7 +1263,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 	}
 
 	// Update params
-	if (userData.game.param){
+	if (userData.game.param && !plus){
 		// The xml to json converter doesn't understand arrays with a single element
 		if (!Array.isArray(userData.game.param.info)) {
 			userData.game.param.info = [userData.game.param.info];
