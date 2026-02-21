@@ -9,6 +9,7 @@ const sdvxGameMusicSchema = new Schema<SdvxGameMusicType>({
 	levelTag:{type:String, required:true},
 	difficulty:{type:Number, required:true},
 	limited:{type:String, required:true},
+	plus:{type:Boolean, default:false},
 
 	title:{type:String},
 	titleSort:{type:String},
@@ -28,6 +29,6 @@ const sdvxGameMusicSchema = new Schema<SdvxGameMusicType>({
 	}
 });
 
-sdvxGameMusicSchema.index({id:1, level:1}, {unique:true});
+sdvxGameMusicSchema.index({id:1, level:1, plus:1}, {unique:true});
 
 export const SdvxGameMusicModel =  mongoose.model<SdvxGameMusicType>("SdvxGameMusic", sdvxGameMusicSchema);

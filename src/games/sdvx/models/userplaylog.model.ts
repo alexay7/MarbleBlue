@@ -1,47 +1,3 @@
-// export type UserPlaylogType = {
-//     _id:Types.ObjectId;
-//
-//     cardId:string;
-//     version:number;
-//
-//     trackId:string;
-//     songId:string;
-//     songType:string;
-//     score:string;
-//     exscore:string;
-//     clearType:string;
-//     scoreGrade:string;
-//     maxChain:string;
-//     just:string;
-//     critical:string;
-//     near:string;
-//     error:string;
-//     effectiveRate:string;
-//     btnRate:string;
-//     longRate:string;
-//     volRate:string;
-//     mode:string;
-//     startOptione:string;
-//     gaugeType:string;
-//     notesOption:string;
-//     onlineNum:string;
-//     localNum:string;
-//     challengeType:string;
-//     retryCnt:string;
-//     judge:string;
-//     dropFrame:string;
-//     dropFrameMax:string;
-//     dropCount:string;
-//     etc:string;
-//     mixId:string;
-//     mixLike:string;
-//
-//     matching:{
-//         code:string;
-//         score:string;
-//     }[]
-// }
-
 import mongoose, {Schema, SchemaTypes} from "mongoose";
 import type { SdvxUserPlaylogType } from "../types/userplaylog.types";
 
@@ -50,6 +6,7 @@ const sdvxUserPlaylogSchema = new Schema<SdvxUserPlaylogType>({
 
 	cardId: {type: String, required: true},
 	version: {type: Number, required: true},
+	plus: {type: Boolean, default:false},
 
 	trackId: {type: String, required: true},
 	songId: {type: String, required: true},

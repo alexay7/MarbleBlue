@@ -8,6 +8,7 @@ export type SdvxUserMusicDetailType = {
     sdvxId:string;
     name:string;
     version:number;
+    plus:boolean;
 
     songId:number;
     songType:number;

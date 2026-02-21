@@ -58,6 +58,7 @@ sdvxRouter.post("/",
 		}).loose(),
 		body: z.object({
 			$: z.object({
+				model: z.string(),
 				srcid: z.string()
 			}).loose()
 		}).loose()
@@ -67,6 +68,7 @@ sdvxRouter.post("/",
 
 		const pcbId = req.body.$.srcid;
 
+		const isPlus = req.body.$.model.includes(":X:");
 		const foundPcb = await SdvxPcbModel.findOne({pcbId});
 
 		if (!foundPcb) {
@@ -153,9 +155,9 @@ sdvxRouter.post("/",
 			});
 		}
 		case "game.sv6_common":
-			return getServerData(req, res, foundPcb, 6);
+			return getServerData(req, res, foundPcb, 6, isPlus);
 		case "game.sv7_common":
-			return getServerData(req, res, foundPcb, 7);
+			return getServerData(req, res, foundPcb, 7, isPlus);
 
 		case "game.sv6_hiscore":
 		case "game.sv7_hiscore":
@@ -202,12 +204,12 @@ sdvxRouter.post("/",
 		case "game.sv7_frozen":
 			return noOp(req, res, "game");
 		case "game.sv6_load_m":
-			return loadUserMusic(req, res, 6);
+			return loadUserMusic(req, res, 6, isPlus);
 		case "game.sv7_load_m":
-			return loadUserMusic(req, res, 7);
+			return loadUserMusic(req, res, 7, isPlus);
 		case "game.sv6_load_r":
 		case "game.sv7_load_r":
-			return loadUserRivals(req, res);
+			return loadUserRivals(req, res, isPlus);
 		case "game.sv6_lounge":
 		case "game.sv7_lounge":
 			return lounge(req, res);
@@ -234,9 +236,9 @@ sdvxRouter.post("/",
 		case "game.sv7_save":
 			return saveUserData(req, res);
 		case "game.sv6_save_m":
-			return saveUserPlaylog(req, res, 6);
+			return saveUserPlaylog(req, res, 6, isPlus);
 		case "game.sv7_save_m":
-			return saveUserPlaylog(req, res, 7);
+			return saveUserPlaylog(req, res, 7, isPlus);
 		case "game.sv6_save_e":
 			return saveWeeklyMusic(req, res, 6);
 		case "game.sv7_save_e":
@@ -434,7 +436,7 @@ function getShopData(req: UnkownRequest, res: Response) {
 	});
 }
 
-async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbType, version: number) {
+async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbType, version: number, plus:boolean) {
 	const valGen = await SdvxGameValgenModel.find({});
 
 	const valGenItems = valGen.reduce((acc, vg) => {
@@ -467,7 +469,7 @@ async function getServerData(req: UnkownRequest, res: Response, pcbData:SdvxPcbT
 	// 1 - server information, 3 - stamps, 6 - kac?, 17 - megamix?, 19 - complete stamps, 20 - tama, 22 - variant gate
 	const gameEvents = await SdvxGameEventModel.find({version}).lean();
 
-	const gameMusic = await SdvxGameMusicModel.find({}).lean();
+	const gameMusic = await SdvxGameMusicModel.find(plus?{plus:true}:{plus:{$ne:true}}).lean();
 
 	const gameCourses = await SdvxGameCourseModel.find({version}).lean();
 
@@ -1098,7 +1100,7 @@ async function loadUserData(req: UnkownRequest, res: Response, version:number) {
 	});
 }
 
-async function loadUserMusic(req: UnkownRequest, res: Response, version:number) {
+async function loadUserMusic(req: UnkownRequest, res: Response, version:number, plus:boolean) {
 	const requestBody = req.body as LoadUserDataType;
 
 	const accessCode = v(requestBody.game.refid);
@@ -1108,17 +1110,23 @@ async function loadUserMusic(req: UnkownRequest, res: Response, version:number) 
 		return noOp(req, res, "game");
 	}
 
-	const userMusicDetails = await SdvxUserMusicDetailModel.find({cardId: foundCard.profileId});
+	const userMusicDetails = await SdvxUserMusicDetailModel.find(plus ? {cardId: foundCard.profileId, plus:true}:{cardId: foundCard.profileId, plus:{$ne:true}}).sort({version:-1}).lean();
 
 	return res.json({
 		game: {
 			music: {
 				info: userMusicDetails.map(musicDetail => {
-					if(version===7 && musicDetail.version===7){
+					if(version===7 && musicDetail.version!==7){
 						switch(musicDetail.clearType){
 						case 4: musicDetail.clearType = 5; break;
 						case 5: musicDetail.clearType = 6; break;
 						case 6: musicDetail.clearType = 4; break;
+						}
+					} else if (version!==7 && musicDetail.version===7){
+						switch(musicDetail.clearType){
+						case 4: musicDetail.clearType = 6; break;
+						case 5: musicDetail.clearType = 4; break;
+						case 6: musicDetail.clearType = 5; break;
 						}
 					}
 
@@ -1152,7 +1160,7 @@ async function loadUserMusic(req: UnkownRequest, res: Response, version:number) 
 	});
 }
 
-async function loadUserRivals(req: UnkownRequest, res: Response) {
+async function loadUserRivals(req: UnkownRequest, res: Response, plus:boolean) {
 	const requestBody = req.body as {game: {refid: SingleXmlVariableType}};
 
 	const foundCard = await Card.findOne({extId: v(requestBody.game.refid)});
@@ -1166,6 +1174,14 @@ async function loadUserRivals(req: UnkownRequest, res: Response) {
 	const foundUserData = await SdvxUserDataModel.findOne({cardId: foundCard.profileId});
 	if (!foundUserData) {
 		return noOp(req, res, "game");
+	}
+
+	if(plus){
+		return res.json({
+			game:{
+				rival: []
+			}
+		});
 	}
 
 	const kamaitachiRivals:string[] = foundUserData.rivals || [];
@@ -1412,7 +1428,7 @@ async function saveUserData(req: UnkownRequest, res: Response) {
 	});
 }
 
-async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number) {
+async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number, plus:boolean) {
 	const userPlaylog = req.body as UpsertUserPlaylogType;
 
 	const foundCard = await Card.findOne({extId: v(userPlaylog.game.refid)});
@@ -1435,6 +1451,7 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number
 		await SdvxUserPlaylogModel.create({
 			cardId: foundCard.profileId,
 			version: version,
+			plus,
 			trackId: v(track.track_no),
 			songId: v(track.music_id),
 			songType: v(track.music_type),
@@ -1475,7 +1492,6 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number
 
 		const previousPB = await SdvxUserMusicDetailModel.findOne({
 			cardId: foundCard.profileId,
-			version,
 			songId: parseInt(v(track.music_id)),
 			songType: parseInt(v(track.music_type)),
 		}).lean();
@@ -1486,6 +1502,7 @@ async function saveUserPlaylog(req: UnkownRequest, res: Response, version:number
 				version,
 				sdvxId: userData.sdvxId,
 				name: userData.name,
+				plus,
 
 				songId: parseInt(v(track.music_id)),
 				songType: parseInt(v(track.music_type)),

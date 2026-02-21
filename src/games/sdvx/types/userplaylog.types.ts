@@ -6,6 +6,7 @@ export type SdvxUserPlaylogType = {
 
     cardId:string;
     version:number;
+    plus:boolean;
 
     trackId:string;
     songId:string;

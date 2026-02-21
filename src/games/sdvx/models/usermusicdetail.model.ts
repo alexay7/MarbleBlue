@@ -8,6 +8,7 @@ const sdvxUserMusicDetailSchema = new Schema<SdvxUserMusicDetailType>({
 	version: {type: Number, required: true},
 	sdvxId: {type: String, required: true},
 	name: {type: String, required: true},
+	plus: {type: Boolean, default:false},
 
 	songId: {type: Number, required: true},
 	songType: {type: Number, required: true},

@@ -8,6 +8,7 @@ export type SdvxGameMusicType = {
     levelTag:string;
     difficulty:number;
     limited:string;
+    plus:boolean;
 
     title:string;
     titleSort:string;
